@@ -16,37 +16,16 @@ CHANGE LOG
 1.0.0 Initial version
 '''
 
+import sys
+import os
 import time
 
-
-class Testsuite:
-    '''
-    Class for accessing the Framework functionalities.
-    '''
-
-    def __init__(self,workBookName='',workSheetName='',tableHdrRow=17,rowTypeCol=0,cmdTypeCol=1,reqIDCol=2,testNameCol=3,testDescCol=4,testCondCol=5,expResCol=6,actResCol=7,testResCol=8,commentCol=9):
-        '''
-        Description: Constructor. Access the physical communication device.
-
-        Example:
-            tsuiteObj = Testsuite()
-        '''
-        self.workBookName  = workBookName
-        self.workSheetName = workSheetName
-
-        self.tableHdrRow = tableHdrRow
-        self.rowTypeCol  = rowTypeCol
-        self.cmdTypeCol  = cmdTypeCol
-        self.reqIDCol    = reqIDCol
-        self.testNameCol = testNameCol
-        self.testDescCol = testDescCol
-        self.testCondCol = testCondCol
-        self.expResCol   = expResCol
-        self.actResCol   = actResCol
-        self.testResCol  = testResCol
-        self.commentCol  = commentCol
+''' Adding path for loading correctly tsuite library '''
+TSUITE_LIB_PATH = os.path.abspath(r'../Libs/tsuite')
+sys.path.append(TSUITE_LIB_PATH)
 
 
-        print "Init Called"
+from tsuite import *
 
 
+tsuiteObj = Testsuite()
