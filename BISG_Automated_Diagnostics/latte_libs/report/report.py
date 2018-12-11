@@ -374,3 +374,5 @@ class HTMLReport(object):
         self.__update_html()
         self.__finish_html()
 
+    def get_log_dir(self):
+        return (os.getcwd() + '/' + self.reportDir + '/' + self.reportSubDir + '/' + self.reportSubDir + '_logfile.txt')

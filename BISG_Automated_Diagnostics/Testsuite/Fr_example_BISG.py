@@ -82,7 +82,13 @@ STOP : Finish Exit Conditions
 ================================================================================
 '''
 def endTest():
+    #Generate HTML Report
     report.generate_report()
+
+    #Save Logfile
+    frObj.dgn.iso.net.log_file = report.get_log_dir()
+    frObj.dgn.save_logfile()
+
     canObj.stop_cyclic_frame('PMZ_CAN_NodeGWM_NM')
     print "\nScript Execution Finished !!\n"
     com.exit()
