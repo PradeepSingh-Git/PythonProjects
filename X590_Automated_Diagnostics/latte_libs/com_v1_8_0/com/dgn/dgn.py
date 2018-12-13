@@ -744,6 +744,17 @@ class DGN():
         self.iso.service_0x14([0xFF, 0xFF, 0xFF])
         self.response = self.iso.response
 
+    def clear_dtcs_custom(self,ParamList=[]):
+        """
+        Description: Sends ClearDTC service.
+        Returns: list of bytes with the ECU response.
+
+        Example:
+            dgn.clear_dtcs()
+        """
+        if self.print_service: print "Clear DTCs"
+        self.iso.service_0x14(ParamList)
+        self.response = self.iso.response
 
     def read_dtcs(self, service_params):
         """
@@ -787,6 +798,18 @@ class DGN():
         """
         if self.print_service: print "Control DTCs setting to", hex(dtc_setting_type)
         return self.iso.service_0x85(dtc_setting_type)
+
+    def control_dtc_setting_custom(self, dtc_setting_type,ParamList=[]):
+        """
+        Description: Sends ControlDTCSetting service.
+        Parameter 'type' contains a byte with the service parameter DTCSettingType.
+        Returns: list of bytes with the ECU response.
+
+        Example:
+            dgn.control_dtc_setting(0x00)
+        """
+        if self.print_service: print "Control DTCs setting to", hex(dtc_setting_type)
+        return self.iso.service_0x85(dtc_setting_type,ParamList)    
 
     ############ SW Download stuff ############
 

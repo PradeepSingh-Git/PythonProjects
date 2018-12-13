@@ -1,0 +1,764 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type="text/xsl" href="REPORT-TLA_Service_85.xsl" ?>
+<TEST_REPORT>
+    <Collection>
+        <Test>
+            <TestCase>
+
+Test Case 1: Check Software versions </TestCase>
+            <TestDescription>Check Application and Bootloader software version using DID: 0xFD00 and 0xF109</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Perform ECU reset</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     3.208  7E5  8  02 11 01 00 00 00 00 00 
+     3.216  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     4.218  7E5  8  02 10 01 00 00 00 00 00 
+     4.224  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Read Application Software Version</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     4.529  7E5  8  03 22 FD 00 00 00 00 00 
+     4.539  7ED  8  06 62 FD 00 08 34 11 00 
+</Actual>
+                <Expected>62 FD 00 08 34 11</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Read Bootloader Software Version</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     4.849  7E5  8  03 22 F1 09 00 00 00 00 
+     4.858  7ED  8  06 62 F1 09 08 03 03 00 
+</Actual>
+                <Expected>62 F1 09 08 03 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>4</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>4</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 2: Configure the  ECU to OBD (D7u) </TestCase>
+            <TestDescription>Check Application and Bootloader software version using DID: 0xFD00 and 0xF109</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Select D7u From VehSim Panel To configure the ECU to OBD</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStepsOK>1</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>1</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 3: Check OBD DTC P0D5611 Proximity Detection Circuit Short To Ground - Service 85 01</TestCase>
+            <TestDescription>Service 85 01 ControlDTCSetting ON</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     8.952  7E5  8  02 10 01 00 00 00 00 00 
+     8.960  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>ClearDiagnosticInformation</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     9.273  7E5  8  04 14 FF FF FF 00 00 00 
+     9.289  7ED  8  01 54 00 00 00 00 00 00 
+</Actual>
+                <Expected>54</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    10.296  7E5  8  02 10 03 00 00 00 00 00 
+    10.303  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Resume status mask updation of DTC by ControlDTCSetting ON</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    10.614  7E5  8  02 85 01 00 00 00 00 00 
+    10.623  7ED  8  02 C5 01 00 00 00 00 00 
+</Actual>
+                <Expected>C5 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 02-reportDTCByStatusMask to check DTC 0D5611 is not logged</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    12.634  7E5  8  03 19 02 27 00 00 00 00 
+    12.645  7ED  8  10 13 59 02 FF 0E 73 00 
+    12.646  7E5  8  30 00 0A 00 00 00 00 00 
+    12.651  7ED  8  21 27 30 38 49 2F E3 00 
+    12.656  7ED  8  22 55 2F F0 00 49 27 00 
+</Actual>
+                <Expected>59 02 FF</Expected>
+                <Comment>Read DTC Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>Set Fault,Proximity Detection Circuit  Short To Ground </Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 01-reportNumberOfDTCByStatusMask</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    16.004  7E5  8  03 19 01 27 00 00 00 00 
+    16.018  7ED  8  06 59 01 FF 00 00 04 00 
+</Actual>
+                <Expected>59 01 FF 00 00 01</Expected>
+                <Comment>Read DTC Failed!!
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 02-reportDTCByStatusMask</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    17.027  7E5  8  03 19 02 27 00 00 00 00 
+    17.041  7ED  8  10 13 59 02 FF 0E 73 00 
+    17.042  7E5  8  30 00 0A 00 00 00 00 00 
+    17.046  7ED  8  21 27 30 38 49 2F E3 00 
+    17.052  7ED  8  22 55 2F F0 00 49 27 00 
+</Actual>
+                <Expected>59 02 0D 56 11 27</Expected>
+                <Comment>Read DTC Failed!!
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>ClearDiagnosticInformation</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    19.062  7E5  8  04 14 FF FF FF 00 00 00 
+    19.079  7ED  8  01 54 00 00 00 00 00 00 
+</Actual>
+                <Expected>54</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    20.084  7E5  8  02 10 03 00 00 00 00 00 
+    20.094  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Resume status mask updation of DTC by ControlDTCSetting ON</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    20.401  7E5  8  02 85 81 00 00 00 00 00 
+    25.406  7E5  8  02 85 81 00 00 00 00 00 
+    25.412  7ED  8  03 7F 85 7F 00 00 00 00 
+    25.420  7DF  8  02 3E 80 00 00 00 00 00 
+</Actual>
+                <Expected/>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 02-reportDTCByStatusMask to check DTC 0D5611 is not logged</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    27.421  7DF  8  02 3E 80 00 00 00 00 00 
+    27.423  7E5  8  03 19 02 27 00 00 00 00 
+    27.436  7ED  8  10 13 59 02 FF 0E 73 00 
+    27.437  7E5  8  30 00 0A 00 00 00 00 00 
+    27.441  7ED  8  21 27 30 38 49 2F E3 00 
+    27.446  7ED  8  22 55 2F F0 00 49 27 00 
+</Actual>
+                <Expected>59 02 FF</Expected>
+                <Comment>Read DTC Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>Set Fault,Proximity Detection Circuit  Short To Ground </Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 01-reportNumberOfDTCByStatusMask</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    31.250  7E5  8  03 19 01 27 00 00 00 00 
+    31.262  7ED  8  06 59 01 FF 00 00 04 00 
+</Actual>
+                <Expected>59 01 FF 00 00 01</Expected>
+                <Comment>Read DTC Failed!!
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 02-reportDTCByStatusMask</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    32.271  7E5  8  03 19 02 27 00 00 00 00 
+    32.286  7ED  8  10 13 59 02 FF 0E 73 00 
+    32.286  7E5  8  30 00 0A 00 00 00 00 00 
+    32.291  7ED  8  21 27 30 38 49 2F E3 00 
+    32.297  7ED  8  22 55 2F F0 00 49 27 00 
+</Actual>
+                <Expected>59 02 FF 0D 56 11 27</Expected>
+                <Comment>Read DTC Failed!!
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStepsOK>17</TestStepsOK>
+            <TestStepsNOK>4</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>21</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 4: Check OBD DTC P0D5611 Proximity Detection Circuit Short To Ground - Service 85 02</TestCase>
+            <TestDescription>Service 85 01 ControlDTCSetting OFF</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    35.318  7E5  8  02 10 01 00 00 00 00 00 
+    35.323  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>ClearDiagnosticInformation</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    35.632  7E5  8  04 14 FF FF FF 00 00 00 
+    35.648  7ED  8  01 54 00 00 00 00 00 00 
+</Actual>
+                <Expected>54</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    36.681  7E5  8  02 10 03 00 00 00 00 00 
+    36.687  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Stop the status mask updation of DTC by ControlDTCSetting OFF</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    36.996  7E5  8  02 85 02 00 00 00 00 00 
+    37.001  7ED  8  02 C5 02 00 00 00 00 00 
+</Actual>
+                <Expected>C5 02</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 02-reportDTCByStatusMask to check DTC 0D5611 is not logged</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    39.019  7E5  8  03 19 02 27 00 00 00 00 
+    39.035  7ED  8  10 13 59 02 FF 0E 73 00 
+    39.035  7E5  8  30 00 0A 00 00 00 00 00 
+    39.039  7ED  8  21 27 30 38 49 2F E3 00 
+    39.045  7ED  8  22 55 2F F0 00 49 27 00 
+</Actual>
+                <Expected>59 02 FF</Expected>
+                <Comment>Read DTC Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>Set Fault,Proximity Detection Circuit  Short To Ground </Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 01-reportNumberOfDTCByStatusMask</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    42.613  7E5  8  03 19 01 27 00 00 00 00 
+    42.626  7ED  8  06 59 01 FF 00 00 04 00 
+</Actual>
+                <Expected>59 01 FF 00 </Expected>
+                <Comment>Read DTC Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 02-reportDTCByStatusMask</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    43.632  7E5  8  03 19 02 27 00 00 00 00 
+    43.645  7ED  8  10 13 59 02 FF 0E 73 00 
+    43.646  7E5  8  30 00 0A 00 00 00 00 00 
+    43.650  7ED  8  21 27 30 38 49 2F E3 00 
+    43.654  7ED  8  22 55 2F F0 00 49 27 00 
+</Actual>
+                <Expected>59 02 FF</Expected>
+                <Comment>Read DTC Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>ClearDiagnosticInformation</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    45.663  7E5  8  04 14 FF FF FF 00 00 00 
+    45.683  7ED  8  01 54 00 00 00 00 00 00 
+</Actual>
+                <Expected>54</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    46.692  7E5  8  02 10 03 00 00 00 00 00 
+    46.702  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Stop the status mask updation of DTC by ControlDTCSetting OFF</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    47.009  7E5  8  02 85 82 00 00 00 00 00 
+    52.013  7E5  8  02 85 82 00 00 00 00 00 
+    52.022  7ED  8  03 7F 85 7F 00 00 00 00 
+    52.027  7DF  8  02 3E 80 00 00 00 00 00 
+</Actual>
+                <Expected/>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 02-reportDTCByStatusMask to check DTC 0D5611 is not logged</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    54.029  7DF  8  02 3E 80 00 00 00 00 00 
+    54.031  7E5  8  03 19 02 27 00 00 00 00 
+    54.050  7ED  8  10 13 59 02 FF 0E 73 00 
+    54.050  7E5  8  30 00 0A 00 00 00 00 00 
+    54.055  7ED  8  21 27 30 38 49 2F E3 00 
+    54.060  7ED  8  22 55 2F F0 00 49 27 00 
+</Actual>
+                <Expected>59 02 00</Expected>
+                <Comment>Read DTC Failed!!
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>Set Fault,Proximity Detection Circuit  Short To Ground </Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 01-reportNumberOfDTCByStatusMask</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    57.715  7E5  8  03 19 01 27 00 00 00 00 
+    57.726  7ED  8  06 59 01 FF 00 00 04 00 
+</Actual>
+                <Expected>59 01 FF 00  </Expected>
+                <Comment>Read DTC Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>send request 19 02-reportDTCByStatusMask</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    58.733  7E5  8  03 19 02 27 00 00 00 00 
+    58.745  7ED  8  10 13 59 02 FF 0E 73 00 
+    58.746  7E5  8  30 00 0A 00 00 00 00 00 
+    58.750  7ED  8  21 27 30 38 49 2F E3 00 
+    58.755  7ED  8  22 55 2F F0 00 49 27 00 
+</Actual>
+                <Expected>59 02 FF</Expected>
+                <Comment>Read DTC Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Wait for 1 sec</Description>
+                <Result>1</Result>
+                <Actual/>
+                <Expected/>
+                <Comment/>
+            </TestStep>
+            <TestStepsOK>20</TestStepsOK>
+            <TestStepsNOK>1</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>21</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 5: Check Service 85  Supported NRC</TestCase>
+            <TestDescription>Check Service 0x85 behaviour</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    61.772  7E5  8  02 10 03 00 00 00 00 00 
+    61.782  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Send Request with service 0x85 with  invalid subfunction </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    62.090  7E5  8  02 85 05 00 00 00 00 00 
+    62.096  7ED  8  03 7F 85 12 00 00 00 00 
+</Actual>
+                <Expected>7F 85 12</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Send Request with service 0x85 with  incorrect Mesaage Length</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    63.103  7E5  8  03 85 01 01 00 00 00 00 
+    63.111  7ED  8  03 7F 85 13 00 00 00 00 
+</Actual>
+                <Expected>7F  85 13</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>3</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>3</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 6: Check NRC 7F- Service 85 01</TestCase>
+            <TestDescription>Service 85 with Default &amp; Programming Session</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    65.129  7E5  8  02 10 01 00 00 00 00 00 
+    65.139  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01 00 19 01 F4</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Send Request to Read DID D100 using service 0x22 in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    65.445  7E5  8  03 22 D1 00 00 00 00 00 
+    65.453  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>ClearDiagnosticInformation</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    65.761  7E5  8  04 14 FF FF FF 00 00 00 
+    65.778  7ED  8  01 54 00 00 00 00 00 00 
+</Actual>
+                <Expected>54</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Resume status mask updation of DTC by ControlDTCSetting ON</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    66.785  7E5  8  02 85 01 00 00 00 00 00 
+    66.791  7ED  8  03 7F 85 7F 00 00 00 00 
+</Actual>
+                <Expected>7F 85 7F </Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Stop the status mask updation of DTC by ControlDTCSetting OFF</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    67.800  7E5  8  02 85 02 00 00 00 00 00 
+    67.806  7ED  8  03 7F 85 7F 00 00 00 00 
+</Actual>
+                <Expected>7F 85 7F </Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Resume status mask updation of DTC by ControlDTCSetting ON</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    68.817  7E5  8  02 85 81 00 00 00 00 00 
+    68.825  7ED  8  03 7F 85 7F 00 00 00 00 
+</Actual>
+                <Expected>7F 85 7F </Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Stop the status mask updation of DTC by ControlDTCSetting OFF</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    69.832  7E5  8  02 85 82 00 00 00 00 00 
+    69.839  7ED  8  03 7F 85 7F 00 00 00 00 
+</Actual>
+                <Expected>7F 85 7F </Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Programming Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    70.846  7E5  8  02 10 02 00 00 00 00 00 
+    70.853  7ED  8  06 50 02 00 24 01 F4 00 
+</Actual>
+                <Expected>50 02</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Make Tester Present ON Using Service 3E</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    71.158  7E5  8  02 3E 00 00 00 00 00 00 
+    71.158  7ED  8  02 7E 00 00 00 00 00 00 
+</Actual>
+                <Expected>7E 00</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Send Request to Read DID D100 using service 0x22 in Programming Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    72.167  7E5  8  03 22 D1 00 00 00 00 00 
+    72.168  7ED  8  04 62 D1 00 02 00 00 00 
+</Actual>
+                <Expected>62 D1 00 02</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>ClearDiagnosticInformation</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    72.476  7E5  8  04 14 FF FF FF 00 00 00 
+    72.477  7ED  8  03 7F 14 11 00 00 00 00 
+</Actual>
+                <Expected>54</Expected>
+                <Comment>Test Failed.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Resume status mask updation of DTC by ControlDTCSetting ON</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    73.485  7E5  8  02 85 01 00 00 00 00 00 
+    73.485  7ED  8  03 7F 85 11 00 00 00 00 
+</Actual>
+                <Expected>7F 85 7F </Expected>
+                <Comment>Test Failed.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Stop the status mask updation of DTC by ControlDTCSetting OFF</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    74.492  7E5  8  02 85 02 00 00 00 00 00 
+    74.492  7ED  8  03 7F 85 11 00 00 00 00 
+</Actual>
+                <Expected>7F 85 7F </Expected>
+                <Comment>Test Failed.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Resume status mask updation of DTC by ControlDTCSetting ON</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    75.501  7E5  8  02 85 81 00 00 00 00 00 
+    75.502  7ED  8  03 7F 85 11 00 00 00 00 
+</Actual>
+                <Expected>7F 85 7F </Expected>
+                <Comment>Test Failed.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Stop the status mask updation of DTC by ControlDTCSetting OFF</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    76.510  7E5  8  02 85 82 00 00 00 00 00 
+    76.510  7ED  8  03 7F 85 11 00 00 00 00 
+</Actual>
+                <Expected>7F 85 7F </Expected>
+                <Comment>Test Failed.
+</Comment>
+            </TestStep>
+            <TestStepsOK>10</TestStepsOK>
+            <TestStepsNOK>5</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>15</TestsTotal>
+        </Test>
+    </Collection>
+    <TestTool>LATTE</TestTool>
+    <DateTime>13-12-2018 17:47</DateTime>
+    <XMLVersion>1.0.0</XMLVersion>
+    <TestType>IntegrationTest</TestType>
+    <ObjectName>DGN</ObjectName>
+    <TlaVer>1.0.0</TlaVer>
+    <SwBranch>Version  (08 34 10)</SwBranch>
+    <SvnRev>Level 8</SvnRev>
+    <HwVersion>X590</HwVersion>
+    <Author>Shitole Priyanka</Author>
+    <service>TLA_Service_85</service>
+    <TotalTestStepsOK>55</TotalTestStepsOK>
+    <TotalTestStepsNOK>10</TotalTestStepsNOK>
+    <TotalTestStepsNT>0</TotalTestStepsNT>
+    <TotalTestSteps>65</TotalTestSteps>
+</TEST_REPORT>

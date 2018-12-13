@@ -372,7 +372,23 @@ fo.write("    response_str = response_str.replace('0x','')\n")
 fo.write("    response_str = response_str.upper()\n")
 fo.write("    return response_str\n\n\n")
 
+#---------------------------------------Compare Results-----------------------------------------------------------------
+fo.write("\ndef CompareResults(ExpectedRes,ActualRes):\n")
+fo.write("    returnVal = True\n")
+fo.write("    temp_List = []\n")
+fo.write("    for i in range(0,len(ExpectedRes),2):\n")
+fo.write("          byteStr = ''\n")
+fo.write("          byteStr = byteStr + ExpectedRes[i]\n")
+fo.write("          byteStr = byteStr + ExpectedRes[i+1]\n")
+fo.write("          byteHex_str = '0x'+ byteStr\n")
+fo.write("          temp_List.append(byteHex_str)\n")
+fo.write("    for j in range(0,len(temp_List)):\n")
+fo.write("          if(ActualRes[j] == int(temp_List[j],16)):\n")
+fo.write("                  continue\n")
+fo.write("          else:\n")
+fo.write("                  returnVal = False\n")
 
+fo.write("    return returnVal\n\n\n")
 
 #-------------------------------------------Generate InvokeMessageBox() Function-----------------------------------------
 fo.write("\ndef InvokeMessageBox(MessageStr):\n")
@@ -589,6 +605,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                   if Diag_Service[0:2]=='11': # Check for diagnostic service ID is "RESET"
 
                         PID=Diag_Service[2:4] #Extract Reset Type
+                        
                         print_row = int(curr_row)+1
 
                         fo.write("\n    #######################################")  #Print row number of excel sheet
@@ -600,7 +617,6 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ################################\n")
 
                         TD = test_step_desc.replace('\n',' ')
-
                         TD = TD.replace('\'','\"')
 
                         fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
@@ -611,7 +627,20 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write(r"    response_str = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
-                        fo.write("    can%s.dgn.ecu_reset(%s)\n" % (int(1),'0x'+PID)) # Reset By Diagnostics
+
+                        if(len(Diag_Service) <= 4):
+                            if(PID == ''):
+                                fo.write("    can%s.dgn.iso.net.send_request([0x11, ], 'PHYSICAL')\n" % (int(1)))  
+                            else:
+                                fo.write("    can%s.dgn.ecu_reset(%s)\n" % (int(1),'0x'+PID))
+                        else:
+                            fo.write("    can%s.dgn.iso.net.send_request([0x11" % (int(1)))
+                            
+                            for i in range(2,len(Diag_Service),2):
+                                fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
+
+                            fo.write("], 'PHYSICAL') \n")
+                        
                         fo.write("    time.sleep(1)\n" )
                         fo.write("\n")
                         fo.write("    Expec_res = '%s'\n"%Expec_res)
@@ -624,15 +653,6 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("          result = False\n")
                         fo.write("          comment ='Unable to reset.Test Fails:!!'\n")
                         fo.write("\n")
-#                         if Test_Case_Cnt == 1:
-#                             fo.write("    if(len(can1.dgn.iso.net._all_frames) == 3): \n" )
-#                             fo.write("          index = 1 \n" )
-#                             fo.write("    else: \n" )
-#                             fo.write("          index = 0 \n" )
-#                             fo.write("\n")
-#                             fo.write("    for j in xrange(index,len(can1.dgn.iso.net._all_frames),1): \n" )
-#                         else:
-#                             fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
                         fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
                         fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
                         fo.write(r"          response_str =  response_str + '\n'")
@@ -642,31 +662,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
 
                   elif Diag_Service[0:2]=='31': # Check for diagnostic service ID is "ROUTINE ID"
 
-                        routine_subfunc = Diag_Service[2:4] #Extract routine subfunction 01,02,03
-                        PID='0x'+Diag_Service[4:8]          #Extract PID Number
-                        param_list_str = Diag_Service[8:]   #Extract Routine Parameter list string
-                        param_list = []
-
-                        if routine_subfunc != '01' and routine_subfunc != '02' and routine_subfunc != '03':
-                            print("\n***Error***\nInvalid Routine Subfunction : %s" %routine_subfunc)
-                            print("\nCheck Row no:")+str(curr_row+1)+"\n"
-                            print("\nCheck column number:")+str(Test_CondName)+"\n"
-                            sys.exit()
-
-                        if len(Diag_Service) < 8:
-                            print("\n***Error***\nInvalid Routine command.")
-                            print("\nCheck Row no:")+str(curr_row+1)+"\n"
-                            print("\nCheck column number:")+str(Test_CondName)+"\n"
-                            sys.exit()
-
-                        for listIndex in xrange(0,len(param_list_str),2):
-                            byteStr = ''
-                            for i in range(2):
-                                byteStr = byteStr + param_list_str[listIndex + i]
-
-                            byteHex_str = '0x'+ byteStr
-                            param_list.append(byteHex_str)
-
+                        PID = Diag_Service[2:4]          #Extract PID Number
 
                         print_row = int(str(curr_row))+1
 
@@ -691,29 +687,18 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("\n")
 
 
-                        if routine_subfunc =='01':    #evaluation of start routine
-                            if len(Diag_Service) == 8: #This is to check if Routine has any parameter list or not
-                                fo.write("    can%s.dgn.start_routine_No_Param(%s) \n" %(int(1),PID))
-                            else:
-                                #fo.write("    can%s.dgn.start_routine(%s,%s) \n" %(int(1),PID,param_list))
-                                fo.write("    can%s.dgn.start_routine(%s,[" %(int(1),PID))
-                                for i in range(len(param_list)):
-                                    if i == (len(param_list)-1):
-                                        fo.write("%s" %param_list[i])
-                                    else:
-                                        fo.write("%s," %param_list[i])
+                        if(PID == ''):
+                            fo.write("    can%s.dgn.iso.net.send_request([0x31, ], 'PHYSICAL')\n" % (int(1)))  
 
-                                fo.write("]) \n")
+                        else:
+                            fo.write("    can%s.dgn.iso.net.send_request([0x31" % (int(1)))
+                            
+                            for i in range(2,len(Diag_Service),2):
+                                fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
 
+                            fo.write("], 'PHYSICAL') \n")
 
-
-                        elif routine_subfunc =='02':
-                            fo.write("    can%s.dgn.stop_routine(%s) \n" %(int(1),PID)) #evaluation of stop routine
-                        elif routine_subfunc =='03':
-                            fo.write("    can%s.dgn.request_routine_results(%s) \n" %(int(1),PID)) #evaluation of request routine results
-                        else :
-                            print("\nError.Invalid Routine Subfunction : %s" %routine_subfunc)
-
+                        fo.write("    time.sleep(1)\n" )
                         fo.write("\n")
                         fo.write("    Expec_res = '%s'\n"%Expec_res)
                         fo.write("    Actual_res = GetActualResponseFrames()\n")
@@ -784,7 +769,6 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                             fo.write("    can%s.dgn.read_did(%s) \n" % (int(1),PID))
                         fo.write("    time.sleep(0.3)\n" )
                         fo.write("\n")
-
 
                         if (Expec_res.find("[MIN]:")>=0) or (Expec_res.find("[MAX]:")>=0):
                             fo.write("    Expec_res = '%s'\n"%Expec_res)
@@ -939,7 +923,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
 
                   elif Diag_Service[0:2]=='19': # Check for diagnostic service ID is "READ DTC Information"
 
-                        PID=Diag_Service[2:] #Extract PID Number
+                        PID=Diag_Service[2:4] #Extract PID Number
 
                         print_row = int(curr_row)+1
 
@@ -962,7 +946,17 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write(r"    response_str = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
-                        fo.write("    can%s.dgn.read_dtcs([%s, %s])\n" % (int(1),'0x'+PID[0:2],'0x'+PID[2:4]))
+                        
+                        if(PID == ''):
+                            fo.write("    can%s.dgn.iso.net.send_request([0x19, ], 'PHYSICAL')\n" % (int(1)))
+                        else:
+                            fo.write("    can%s.dgn.iso.net.send_request([0x19" % (int(1)))
+                            
+                            for i in range(2,len(Diag_Service),2):
+                                fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
+
+                            fo.write("], 'PHYSICAL') \n")
+                        
                         fo.write("    time.sleep(1)\n" )
                         fo.write("\n")
                         fo.write("    Expec_res = '%s'\n"%Expec_res)
@@ -994,9 +988,68 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ##          Write DID          #\n")
                         fo.write("    ################################\n")
 
+                  elif Diag_Service[0:2]=='85': # Check for diagnostic service ID is "Control DTC Setting"
+
+                        PID = Diag_Service[2:4] #Extract Subfunction
+                        
+                        print_row = int(curr_row)+1
+
+                        fo.write("\n    #######################################")  #Print row number of excel sheet
+                        fo.write("\n    #Code block generated for row no = %s  #"%print_row)
+                        fo.write("\n    ##################################### #\n")
+
+                        fo.write("\n    ###################################\n")  #Clear Diagnosice Information
+                        fo.write("    ##       Control DTC Setting      ##\n")
+                        fo.write("    ###################################\n")
+
+                        TD = test_step_desc.replace('\n',' ')
+                        TD = TD.replace('\'','\"')
+
+                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
+                        fo.write("    test_Result = False\n" )
+                        fo.write(r"    comment = '\n'" )
+                        fo.write("\n")
+                        fo.write(r"    response_str = '\n'" )
+                        fo.write("\n")
+                        fo.write("\n")
+
+                        if(len(Diag_Service) <= 4):
+                            if(PID == ''):
+                                fo.write("    can%s.dgn.iso.net.send_request([0x85, ], 'PHYSICAL')\n" % (int(1)))  
+                            else:
+                                fo.write("    can%s.dgn.control_dtc_setting_custom(%s)\n" % (int(1),'0x'+PID))
+                        else:
+                            fo.write("    can%s.dgn.iso.net.send_request([0x85" % (int(1)))
+                            
+                            for i in range(2,len(Diag_Service),2):
+                                fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
+
+                            fo.write("], 'PHYSICAL') \n")
+                            
+
+                        fo.write("    time.sleep(1)\n" )
+                        fo.write("\n")
+                        fo.write("    Expec_res = '%s'\n"%Expec_res)
+                        fo.write("    Actual_res = GetActualResponseFrames()\n")
+                        fo.write("\n")
+                        fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
+                        fo.write("          result = True\n")
+                        fo.write("          comment ='Test Successful.'\n")
+                        fo.write("    else: \n" )
+                        fo.write("          result = False\n")
+                        fo.write("          comment ='Test Failed.'\n")
+                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
+                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
+                        fo.write(r"          response_str =  response_str + '\n'")
+                        fo.write("\n")
+                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
+                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile  
 
                   elif Diag_Service[0:2]=='14': # Check for diagnostic service ID is "Clear Diagnosice Information"
 
+                        PID = Diag_Service[2:4] #Extract Subfunction
+                      
                         print_row = int(curr_row)+1
 
                         fo.write("\n    #######################################")  #Print row number of excel sheet
@@ -1007,21 +1060,50 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ## Clear Diagnostics Information  ##\n")
                         fo.write("    ###################################\n")
 
+                        TD = test_step_desc.replace('\n',' ')
+                        TD = TD.replace('\'','\"')
+
+                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
+                        fo.write("    test_Result = False\n" )
+                        fo.write(r"    comment = '\n'" )
+                        fo.write("\n")
+                        fo.write(r"    response_str = '\n'" )
+                        fo.write("\n")
+                        fo.write("\n")
+
+                        if(PID == ''):
+                            fo.write("    can%s.dgn.iso.net.send_request([0x14, ], 'PHYSICAL')\n" % (int(1)))
+                        else:
+                            fo.write("    can%s.dgn.iso.net.send_request([0x14" % (int(1)))
+                            
+                            for i in range(2,len(Diag_Service),2):
+                                fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
+
+                            fo.write("], 'PHYSICAL') \n")
+                            
+
+                        fo.write("    time.sleep(1)\n" )
+                        fo.write("\n")
+                        fo.write("    Expec_res = '%s'\n"%Expec_res)
+                        fo.write("    Actual_res = GetActualResponseFrames()\n")
+                        fo.write("\n")
+                        fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
+                        fo.write("          result = True\n")
+                        fo.write("          comment ='Test Successful.'\n")
+                        fo.write("    else: \n" )
+                        fo.write("          result = False\n")
+                        fo.write("          comment ='Test Failed.'\n")
+                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
+                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
+                        fo.write(r"          response_str =  response_str + '\n'")
+                        fo.write("\n")
+                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
+                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile                        
+
                   elif Diag_Service[0:2]=='3E': # Check for diagnostic service ID is "Tester Present"
 
                         PID=Diag_Service[2:4] #Extract PID Number
-                        param_list_str = Diag_Service[4:]
-                        param_list = []
-
-                        for listIndex in xrange(0,len(param_list_str),2):
-                            byteStr = ''
-                            for i in range(2):
-                                byteStr = byteStr + param_list_str[listIndex + i]
-
-                            byteHex_str = '0x'+ str(int(byteStr))
-                            byteInt = int(byteHex_str, 16)
-
-                            param_list.append(byteInt)
 
                         print_row = int(curr_row)+1
 
@@ -1210,15 +1292,12 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                       Can_Signal_Value_List.append(byteHex_str)
 
                   Expec_res = str(Can_Signal_Value_Str.upper())
-				  
-                  print Expec_res
-				  
+				  				  
                   if Expec_res[0] == '0' and Expec_res[1] != '0' and len(Can_Signal_Value_Str)>1:
                       Expec_res = Expec_res[1:]
                   elif Expec_res == '00' or Expec_res == '000' or Expec_res == '0000':
                       Expec_res = '0'
-
-                  print Expec_res					  
+				  
 					  
                   if Can_Message != '' and Can_Signal != '' and Can_Signal_Value_Str != '':
                       fo.write("\n    ################################\n")

@@ -1,0 +1,743 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type="text/xsl" href="REPORT-TLA_Service_11.xsl" ?>
+<TEST_REPORT>
+    <Collection>
+        <Test>
+            <TestCase>
+
+Test Case 1: Check Software versions </TestCase>
+            <TestDescription>Check Application and Bootloader software version using DID: 0xFD00 and 0xF109</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Perform ECU reset</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     3.131  7E5  8  02 11 01 00 00 00 00 00 
+     3.138  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     4.148  7E5  8  02 10 01 00 00 00 00 00 
+     4.155  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Read Application Software Version</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     4.465  7E5  8  03 22 FD 00 00 00 00 00 
+     4.475  7ED  8  06 62 FD 00 08 34 11 00 
+</Actual>
+                <Expected>62 FD 00 08 34 11</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Read Bootloader Software Version</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     4.783  7E5  8  03 22 F1 09 00 00 00 00 
+     4.789  7ED  8  06 62 F1 09 08 03 03 00 
+</Actual>
+                <Expected>62 F1 09 08 03 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>4</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>4</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 2: Check Service 11 ECU Reset</TestCase>
+            <TestDescription>Check Service 0x11 01 behaviour</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Default Session Using Service 0x10</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     6.104  7E5  8  02 10 01 00 00 00 00 00 
+     6.113  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check Response  of PID  D100 in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     6.425  7E5  8  03 22 D1 00 00 00 00 00 
+     6.433  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ECU reset using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     6.741  7E5  8  02 11 01 00 00 00 00 00 
+     6.747  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check current session using DID D100</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     7.757  7E5  8  03 22 D1 00 00 00 00 00 
+     7.763  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Programming Session  Using Service 0x10</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     8.073  7E5  8  02 10 02 00 00 00 00 00 
+     8.083  7ED  8  06 50 02 00 24 01 F4 00 
+</Actual>
+                <Expected>50 02</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check Response  of PID  D100 in  Programming Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     8.393  7E5  8  03 22 D1 00 00 00 00 00 
+     8.393  7ED  8  04 62 D1 00 02 00 00 00 
+</Actual>
+                <Expected>62 D1 00 02</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ECU reset using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     8.704  7E5  8  02 11 01 00 00 00 00 00 
+     8.704  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check current session using DID D100</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     9.716  7E5  8  03 22 D1 00 00 00 00 00 
+     9.721  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session without Security access  Using Service 0x10</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    10.030  7E5  8  02 10 03 00 00 00 00 00 
+    10.041  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check Response  of PID  D100 in  Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    10.351  7E5  8  03 22 D1 00 00 00 00 00 
+    10.360  7ED  8  04 62 D1 00 03 00 00 00 
+</Actual>
+                <Expected>62 D1 00 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ECU reset using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    10.670  7E5  8  02 11 01 00 00 00 00 00 
+    10.680  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check current session using DID D100</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    11.691  7E5  8  03 22 D1 00 00 00 00 00 
+    11.699  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>12</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>12</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 3: Check Service 11 ECU Reset</TestCase>
+            <TestDescription>Check Service 0x11 81 behaviour</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Default Session Using Service 0x10</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    13.014  7E5  8  02 10 01 00 00 00 00 00 
+    13.023  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check Response  of PID  D100 in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    13.333  7E5  8  03 22 D1 00 00 00 00 00 
+    13.338  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ECU reset using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    13.647  7E5  8  02 11 81 00 00 00 00 00 
+</Actual>
+                <Expected/>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check current session using DID D100</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    14.654  7E5  8  03 22 D1 00 00 00 00 00 
+    14.661  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Programming Session  Using Service 0x10</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    14.971  7E5  8  02 10 02 00 00 00 00 00 
+    14.976  7ED  8  06 50 02 00 24 01 F4 00 
+</Actual>
+                <Expected>50 02</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check Response  of PID  D100 in  Programming Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    15.286  7E5  8  03 22 D1 00 00 00 00 00 
+    15.287  7ED  8  04 62 D1 00 02 00 00 00 
+</Actual>
+                <Expected>62 D1 00 02</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ECU reset using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    15.598  7E5  8  02 11 81 00 00 00 00 00 
+</Actual>
+                <Expected/>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check current session using DID D100</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    16.607  7E5  8  03 22 D1 00 00 00 00 00 
+    16.615  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session without Security access  Using Service 0x10</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    16.923  7E5  8  02 10 03 00 00 00 00 00 
+    16.930  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check Response  of PID  D100 in  Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    17.244  7E5  8  03 22 D1 00 00 00 00 00 
+    17.250  7ED  8  04 62 D1 00 03 00 00 00 
+</Actual>
+                <Expected>62 D1 00 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ECU reset using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    17.558  7E5  8  02 11 81 00 00 00 00 00 
+</Actual>
+                <Expected/>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check current session using DID D100</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    18.567  7E5  8  03 22 D1 00 00 00 00 00 
+    18.572  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>12</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>12</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 4: Check Service 11 Supported NRC</TestCase>
+            <TestDescription>Check Service 0x11 behaviour</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Send Request with service 0x11 with  invalid subfunction </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    19.887  7E5  8  02 11 05 00 00 00 00 00 
+    19.895  7ED  8  03 7F 11 12 00 00 00 00 
+</Actual>
+                <Expected>7F 11 12</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Send Request with service 0x11 with  incorrect Mesaage Length</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    20.903  7E5  8  01 11 00 00 00 00 00 00 
+    20.910  7ED  8  03 7F 11 13 00 00 00 00 
+</Actual>
+                <Expected>7F 11 13</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>2</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>2</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 5: Check Service 11 ECU Reset</TestCase>
+            <TestDescription>Check Service 0x11 01 behaviour with security Acess</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    22.923  7E5  8  02 10 03 00 00 00 00 00 
+    22.932  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Unlock the   Security Access Level - 03 using service 27 </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    23.242  7E5  8  02 27 03 00 00 00 00 00 
+    23.248  7ED  8  05 67 03 79 CB B2 00 00 
+    23.759  7E5  8  05 27 04 08 84 A9 00 00 
+    23.782  7ED  8  02 67 04 00 00 00 00 00 
+</Actual>
+                <Expected>67 04</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ECU reset using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    23.793  7E5  8  02 11 01 00 00 00 00 00 
+    23.802  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check current session using DID D100</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    24.813  7E5  8  03 22 D1 00 00 00 00 00 
+    24.819  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    25.127  7E5  8  02 10 03 00 00 00 00 00 
+    25.133  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Unlock the   Security Access Level - 0F using service 27</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    25.444  7E5  8  02 27 0F 00 00 00 00 00 
+    25.453  7ED  8  05 67 0F 7F 59 26 00 00 
+    25.965  7E5  8  05 27 10 51 19 8C 00 00 
+    25.987  7ED  8  02 67 10 00 00 00 00 00 
+</Actual>
+                <Expected>67 10</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ECU reset using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    25.998  7E5  8  02 11 01 00 00 00 00 00 
+    26.007  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check current session using DID D100</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    27.020  7E5  8  03 22 D1 00 00 00 00 00 
+    27.027  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>8</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>8</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 6: Check Service 11 ECU Reset</TestCase>
+            <TestDescription>Check Service 0x11 81 behaviour with security Acess</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    28.341  7E5  8  02 10 03 00 00 00 00 00 
+    28.346  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Unlock the   Security Access Level - 03 using service 27 </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    28.655  7E5  8  02 27 03 00 00 00 00 00 
+    28.662  7ED  8  05 67 03 18 C2 DA 00 00 
+    29.171  7E5  8  05 27 04 65 C9 75 00 00 
+    29.196  7ED  8  02 67 04 00 00 00 00 00 
+</Actual>
+                <Expected>67 04</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ECU reset using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    29.207  7E5  8  02 11 81 00 00 00 00 00 
+</Actual>
+                <Expected/>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check current session using DID D100</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    30.215  7E5  8  03 22 D1 00 00 00 00 00 
+    30.221  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    30.528  7E5  8  02 10 03 00 00 00 00 00 
+    30.535  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Unlock the   Security Access Level - 0F using service 27</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    30.845  7E5  8  02 27 0F 00 00 00 00 00 
+    30.849  7ED  8  05 67 0F ED 49 A4 00 00 
+    31.361  7E5  8  05 27 10 B3 3C 72 00 00 
+    31.385  7ED  8  02 67 10 00 00 00 00 00 
+</Actual>
+                <Expected>67 10</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ECU reset using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    31.395  7E5  8  02 11 81 00 00 00 00 00 
+</Actual>
+                <Expected/>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check current session using DID D100</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    32.403  7E5  8  03 22 D1 00 00 00 00 00 
+    32.412  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>8</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>8</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 7: Check Service 11 ECU Reset</TestCase>
+            <TestDescription>Check Service 0x11 40  behaviour</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Default Session Using Service 0x10</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    33.725  7E5  8  02 10 01 00 00 00 00 00 
+    33.731  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check Response  of PID  D100 in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    34.041  7E5  8  03 22 D1 00 00 00 00 00 
+    34.051  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Read DID DD01</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    34.357  7E5  8  03 22 DD 01 00 00 00 00 
+    34.366  7ED  8  06 62 DD 01 FF FF FF 00 
+</Actual>
+                <Expected>62 DD 01 11 22 33</Expected>
+                <Comment>Test Fails!!
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Set Total Distance = 0x112244 using CAN signal VehicleConfParameters</Description>
+                <Result>1</Result>
+                <Actual>VEHCONFIG_400PMZ.VehicleConfParameters=B1112244FFFFFFFF</Actual>
+                <Expected>VEHCONFIG_400PMZ.VehicleConfParameters = B1112244FFFFFFFF</Expected>
+                <Comment>CAN signal set Successfully.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ForceShutdownMemoryWrite using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    35.173  7E5  8  02 11 40 00 00 00 00 00 
+    35.179  7ED  8  02 51 40 00 00 00 00 00 
+</Actual>
+                <Expected>51 40</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Read DID DD01 to check memory is not written</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    36.184  7E5  8  03 22 DD 01 00 00 00 00 
+    36.191  7ED  8  06 62 DD 01 11 22 44 00 
+</Actual>
+                <Expected>62 DD 01 11 22 44</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>5</TestStepsOK>
+            <TestStepsNOK>1</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>6</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 8: Check Service 11 ECU Reset</TestCase>
+            <TestDescription>Check Service 0x11 C0 behaviour</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Default Session Using Service 0x10</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    37.498  7E5  8  02 10 01 00 00 00 00 00 
+    37.505  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Check Response  of PID  D100 in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    37.810  7E5  8  03 22 D1 00 00 00 00 00 
+    37.819  7ED  8  04 62 D1 00 01 00 00 00 
+</Actual>
+                <Expected>62 D1 00 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Read DID DD01</Description>
+                <Result>0</Result>
+                <Actual>CAN Frame :
+    38.125  7E5  8  03 22 DD 01 00 00 00 00 
+    38.133  7ED  8  06 62 DD 01 11 22 44 00 
+</Actual>
+                <Expected>62 DD 01 11 22 33</Expected>
+                <Comment>Test Fails!!
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Set Total Distance = 0x112233 using CAN signal VehicleConfParameters</Description>
+                <Result>1</Result>
+                <Actual>VEHCONFIG_400PMZ.VehicleConfParameters=B1112233FFFFFFFF</Actual>
+                <Expected>VEHCONFIG_400PMZ.VehicleConfParameters = B1112233FFFFFFFF</Expected>
+                <Comment>CAN signal set Successfully.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Perform ForceShutdownMemoryWrite using service 11</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    39.119  7E5  8  02 11 C0 00 00 00 00 00 
+</Actual>
+                <Expected/>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Read DID DD01 to check memory is not written</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    40.125  7E5  8  03 22 DD 01 00 00 00 00 
+    40.130  7ED  8  06 62 DD 01 11 22 33 00 
+</Actual>
+                <Expected>62 DD 01 11 22 33</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>5</TestStepsOK>
+            <TestStepsNOK>1</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>6</TestsTotal>
+        </Test>
+    </Collection>
+    <TestTool>LATTE</TestTool>
+    <DateTime>13-12-2018 21:12</DateTime>
+    <XMLVersion>1.0.0</XMLVersion>
+    <TestType>IntegrationTest</TestType>
+    <ObjectName>DGN</ObjectName>
+    <TlaVer>1.0.0</TlaVer>
+    <SwBranch>Version  (08 34 10)</SwBranch>
+    <SvnRev>Level 8</SvnRev>
+    <HwVersion>X590</HwVersion>
+    <Author>Shitole Priyanka</Author>
+    <service>TLA_Service_11</service>
+    <TotalTestStepsOK>56</TotalTestStepsOK>
+    <TotalTestStepsNOK>2</TotalTestStepsNOK>
+    <TotalTestStepsNT>0</TotalTestStepsNT>
+    <TotalTestSteps>58</TotalTestSteps>
+</TEST_REPORT>

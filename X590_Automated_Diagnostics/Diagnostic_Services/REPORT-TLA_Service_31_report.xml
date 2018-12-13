@@ -1,0 +1,599 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type="text/xsl" href="REPORT-TLA_Service_31.xsl" ?>
+<TEST_REPORT>
+    <Collection>
+        <Test>
+            <TestCase>
+
+Test Case 1: Check Software versions </TestCase>
+            <TestDescription>Check Application and Bootloader software version using DID: 0xFD00 and 0xF109</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Perform ECU reset</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     3.108  7E5  8  02 11 01 00 00 00 00 00 
+     3.115  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     4.126  7E5  8  02 10 01 00 00 00 00 00 
+     4.137  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Read Application Software Version</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     4.455  7E5  8  03 22 FD 00 00 00 00 00 
+     4.461  7ED  8  06 62 FD 00 08 34 11 00 
+</Actual>
+                <Expected>62 FD 00 08 34 11</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Read Bootloader Software Version</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     4.773  7E5  8  03 22 F1 09 00 00 00 00 
+     4.781  7ED  8  06 62 F1 09 08 03 03 00 
+</Actual>
+                <Expected>62 F1 09 08 03 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>4</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>4</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 2: Check Service 0x31 with Routine 0404</TestCase>
+            <TestDescription>Check Service 0x31 Functionality </TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Perform ECU reset</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     6.095  7E5  8  02 11 01 00 00 00 00 00 
+     6.104  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     7.116  7E5  8  02 10 01 00 00 00 00 00 
+     7.125  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     7.435  7E5  8  02 10 03 00 00 00 00 00 
+     7.440  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session  Start VIN LEARN  Routine using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     7.760  7E5  8  04 31 01 04 04 00 00 00 
+     7.769  7ED  8  05 71 01 04 04 7B 00 00 
+</Actual>
+                <Expected>71 01 04 04 7B</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session ,Stop VIN LEARN  Routine using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     8.777  7E5  8  04 31 02 04 04 00 00 00 
+     8.784  7ED  8  05 71 02 04 04 7A 00 00 
+</Actual>
+                <Expected>71 02 04 04 7A</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session Get Result for VIN LEARN  using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+     9.791  7E5  8  04 31 03 04 04 00 00 00 
+     9.798  7ED  8  06 71 03 04 04 7A 04 00 
+</Actual>
+                <Expected>71 03 04 04 7A 04</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>6</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>6</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 3: Check Service 0x31 with Routine 0404</TestCase>
+            <TestDescription>Check Service 0x31 Functionality  in Default Session</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Perform ECU reset</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    11.808  7E5  8  02 11 01 00 00 00 00 00 
+    11.816  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    12.823  7E5  8  02 10 01 00 00 00 00 00 
+    12.831  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session  Start VIN LEARN  Routine using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    13.136  7E5  8  04 31 01 04 04 00 00 00 
+    13.146  7ED  8  03 7F 31 31 00 00 00 00 
+</Actual>
+                <Expected>7F 31 31</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session ,Stop VIN LEARN  Routine using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    14.151  7E5  8  04 31 02 04 04 00 00 00 
+    14.159  7ED  8  03 7F 31 31 00 00 00 00 
+</Actual>
+                <Expected>7F 31 31</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session Get Result for VIN LEARN  using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    15.164  7E5  8  04 31 03 04 04 00 00 00 
+    15.174  7ED  8  03 7F 31 31 00 00 00 00 
+</Actual>
+                <Expected>7F 31 31</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>5</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>5</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 4: Check Service 0x31 with Routine 0404</TestCase>
+            <TestDescription>Check Service 0x31 Functionality  in Programming Session</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Perform ECU reset</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    17.184  7E5  8  02 11 01 00 00 00 00 00 
+    17.192  7ED  8  02 51 01 00 00 00 00 00 
+</Actual>
+                <Expected>51 01</Expected>
+                <Comment>Reset Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Programming Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    18.198  7E5  8  02 10 02 00 00 00 00 00 
+    18.207  7ED  8  06 50 02 00 24 01 F4 00 
+</Actual>
+                <Expected>50 02</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session  Start VIN LEARN  Routine using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    18.512  7E5  8  04 31 01 04 04 00 00 00 
+    18.512  7ED  8  03 7F 31 31 00 00 00 00 
+</Actual>
+                <Expected>7F 31 31</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session ,Stop VIN LEARN  Routine using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    19.517  7E5  8  04 31 02 04 04 00 00 00 
+    19.517  7ED  8  03 7F 31 31 00 00 00 00 
+</Actual>
+                <Expected>7F 31 31</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session Get Result for VIN LEARN  using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    20.522  7E5  8  04 31 03 04 04 00 00 00 
+    20.522  7ED  8  03 7F 31 31 00 00 00 00 
+</Actual>
+                <Expected>7F 31 31</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>5</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>5</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 5: Check routine execution in Extended Session  without Security access</TestCase>
+            <TestDescription>Check Routine 0x0E08: Reset ECU Central Configuration State/Data To Not Configured  in Extended session  without Security access</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    22.533  7E5  8  02 10 01 00 00 00 00 00 
+    22.533  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    22.840  7E5  8  02 10 03 00 00 00 00 00 
+    22.848  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Set PowerMode to &quot;IgnitionOn_2&quot; (6) </Description>
+                <Result>1</Result>
+                <Actual>BCM_PMZ_A.PowerMode=6</Actual>
+                <Expected>BCM_PMZ_A.PowerMode = 06</Expected>
+                <Comment>CAN signal set Successfully.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session without Security access,Start CCF Reset Routine </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    23.653  7E5  8  04 31 01 0E 08 00 00 00 
+    23.661  7ED  8  03 7F 31 33 00 00 00 00 
+</Actual>
+                <Expected>7F 31 33</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>4</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>4</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 6: Check routine execution in Extended Session with Security Level - 03</TestCase>
+            <TestDescription>Check Routine 0x0E08: Reset ECU Central Configuration State/Data To Not Configured  in Extended session  with Security Level - 03</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    25.670  7E5  8  02 10 01 00 00 00 00 00 
+    25.675  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    25.979  7E5  8  02 10 03 00 00 00 00 00 
+    25.990  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Request for  Security Access Level - 03</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    26.297  7E5  8  02 27 03 00 00 00 00 00 
+    26.304  7ED  8  05 67 03 21 D5 F4 00 00 
+    26.811  7E5  8  05 27 04 AF B7 9A 00 00 
+    26.834  7ED  8  02 67 04 00 00 00 00 00 
+</Actual>
+                <Expected>67 04</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Set PowerMode to &quot;IgnitionOn_2&quot; (6) </Description>
+                <Result>1</Result>
+                <Actual>BCM_PMZ_A.PowerMode=6</Actual>
+                <Expected>BCM_PMZ_A.PowerMode = 06</Expected>
+                <Comment>CAN signal set Successfully.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session with Security access,Start CCF Reset Routine </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    27.340  7E5  8  04 31 01 0E 08 00 00 00 
+    27.349  7ED  8  03 7F 31 33 00 00 00 00 
+</Actual>
+                <Expected>7F 31 33</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session with Security access,Stop CCF Reset Routine </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    28.353  7E5  8  04 31 02 0E 08 00 00 00 
+    28.362  7ED  8  03 7F 31 33 00 00 00 00 
+</Actual>
+                <Expected>7F 31 33</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session with Security access,Get Result for CCF Reset Routine </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    29.368  7E5  8  04 31 03 0E 08 00 00 00 
+    29.376  7ED  8  03 7F 31 33 00 00 00 00 
+</Actual>
+                <Expected>7F 31 33</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>7</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>7</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 7: Check routine execution in Extended Session with Security Level - 0F</TestCase>
+            <TestDescription>Check Routine 0x0E08: Reset ECU Central Configuration State/Data To Not Configured  in Extended session  with Security Level - 0F</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Enter in Default Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    31.386  7E5  8  02 10 01 00 00 00 00 00 
+    31.394  7ED  8  06 50 01 00 19 01 F4 00 
+</Actual>
+                <Expected>50 01</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Enter in Extended Session</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    31.699  7E5  8  02 10 03 00 00 00 00 00 
+    31.709  7ED  8  06 50 03 00 19 01 F4 00 
+</Actual>
+                <Expected>50 03</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Request for  Security Access Level - 0F</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    32.016  7E5  8  02 27 0F 00 00 00 00 00 
+    32.024  7ED  8  05 67 0F E7 1D FA 00 00 
+    32.529  7E5  8  05 27 10 D6 74 EE 00 00 
+    32.553  7ED  8  02 67 10 00 00 00 00 00 
+</Actual>
+                <Expected>67 10</Expected>
+                <Comment>Test Successful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Set PowerMode to &quot;IgnitionOn_2&quot; (6) </Description>
+                <Result>1</Result>
+                <Actual>BCM_PMZ_A.PowerMode=6</Actual>
+                <Expected>BCM_PMZ_A.PowerMode = 06</Expected>
+                <Comment>CAN signal set Successfully.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session with Security access,Start CCF Reset Routine </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    33.059  7E5  8  04 31 01 0E 08 00 00 00 
+    33.068  7ED  8  05 71 01 0E 08 49 00 00 
+</Actual>
+                <Expected>71 01 0E 08 </Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session with Security access,Stop CCF Reset Routine </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    34.073  7E5  8  04 31 02 0E 08 00 00 00 
+    34.082  7ED  8  03 7F 31 12 00 00 00 00 
+</Actual>
+                <Expected>7F 31 12 </Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>In Extended Session with Security access,Get Result for CCF Reset Routine </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    35.086  7E5  8  04 31 03 0E 08 00 00 00 
+    35.096  7ED  8  03 7F 31 12 00 00 00 00 
+</Actual>
+                <Expected>7F 31 12 </Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>7</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>7</TestsTotal>
+        </Test>
+        <Test>
+            <TestCase>
+
+Test Case 8: Check Service 31  Supported NRC</TestCase>
+            <TestDescription>Check Service 0x31behaviour</TestDescription>
+            <TestRequirements/>
+            <TestStep>
+                <Description>Send Request with service 0x31 with  invalid subfunction </Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    37.103  7E5  8  04 31 04 04 04 00 00 00 
+    37.108  7ED  8  03 7F 31 12 00 00 00 00 
+</Actual>
+                <Expected>7F 31 12</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>stop the routine 0404  using service 0x31 without starting routine</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    38.113  7E5  8  04 31 02 04 04 00 00 00 
+    38.123  7ED  8  03 7F 31 24 00 00 00 00 
+</Actual>
+                <Expected>7F  31 24</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>send the start request with invalid routine using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    39.128  7E5  8  04 31 01 22 22 00 00 00 
+    39.137  7ED  8  03 7F 31 31 00 00 00 00 
+</Actual>
+                <Expected>7F  31 31</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>send the start request with invalid routine data using service 0x31</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    40.142  7E5  8  07 31 01 0E 01 00 55 55 
+    40.151  7ED  8  03 7F 31 31 00 00 00 00 
+</Actual>
+                <Expected>7F  31 31</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Send Request with service 0x31 with  incorrect Mesaage Length</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    41.155  7E5  8  03 31 01 04 00 00 00 00 
+    41.164  7ED  8  03 7F 31 13 00 00 00 00 
+</Actual>
+                <Expected>7F  31 13</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Send Request with service 0x31 with  incorrect Mesaage Length</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    42.168  7E5  8  03 31 02 04 00 00 00 00 
+    42.179  7ED  8  03 7F 31 13 00 00 00 00 
+</Actual>
+                <Expected>7F  31 13</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStep>
+                <Description>Send Request with service 0x31 with  incorrect Mesaage Length</Description>
+                <Result>1</Result>
+                <Actual>CAN Frame :
+    43.183  7E5  8  03 31 03 04 00 00 00 00 
+    43.193  7ED  8  03 7F 31 13 00 00 00 00 
+</Actual>
+                <Expected>7F  31 13</Expected>
+                <Comment>Routine Execution Succesful.
+</Comment>
+            </TestStep>
+            <TestStepsOK>7</TestStepsOK>
+            <TestStepsNOK>0</TestStepsNOK>
+            <TestStepsNT>0</TestStepsNT>
+            <TestsTotal>7</TestsTotal>
+        </Test>
+    </Collection>
+    <TestTool>LATTE</TestTool>
+    <DateTime>13-12-2018 18:54</DateTime>
+    <XMLVersion>1.0.0</XMLVersion>
+    <TestType>IntegrationTest</TestType>
+    <ObjectName>DGN</ObjectName>
+    <TlaVer>1.0.0</TlaVer>
+    <SwBranch>Version  (08 34 10)</SwBranch>
+    <SvnRev>Level 8</SvnRev>
+    <HwVersion>X590</HwVersion>
+    <Author>Shitole Priyanka</Author>
+    <service>TLA_Service_31</service>
+    <TotalTestStepsOK>45</TotalTestStepsOK>
+    <TotalTestStepsNOK>0</TotalTestStepsNOK>
+    <TotalTestStepsNT>0</TotalTestStepsNT>
+    <TotalTestSteps>45</TotalTestSteps>
+</TEST_REPORT>
