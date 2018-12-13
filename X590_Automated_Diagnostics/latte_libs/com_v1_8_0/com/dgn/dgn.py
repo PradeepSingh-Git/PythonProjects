@@ -340,6 +340,17 @@ class DGN():
         self.iso.service_0x3E(0x00)
         self.response = self.iso.response
 
+    def tester_present_custom(self,subFunc):
+        """
+        Description: Sends TesterPresent.
+        Returns: list of bytes with the ECU response.
+
+        Example:
+            dgn.tester_present()
+        """
+        self.iso.service_0x3E(subFunc)
+        self.response = self.iso.response        
+
     ############ Tester Present stuff ############
 
     def tester_present_wrong_Subfunction(self):

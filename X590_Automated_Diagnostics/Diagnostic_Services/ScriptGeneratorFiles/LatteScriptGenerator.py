@@ -1044,8 +1044,26 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write(r"    response_str = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
-                        fo.write("    can%s.dgn.tester_present()\n" % (int(1)))
-                        #fo.write("    can%s.dgn.tester_present(%s,%s)\n" % (int(1),'0x'+PID,param_list))
+
+
+                        if(len(Diag_Service) <= 4):
+                            if(PID == '00'):
+                                fo.write("    can%s.dgn.tester_present()\n" % (int(1)))    
+                            elif(PID == '80'):
+                                fo.write("    can%s.dgn.tester_present_spr()\n" % (int(1)))
+                            elif(PID == ''):
+                                fo.write("    can%s.dgn.iso.net.send_request([0x3E, ], 'PHYSICAL')\n" % (int(1)))  
+                            else:
+                                fo.write("    can%s.dgn.tester_present_custom(%s)\n" % (int(1),'0x'+PID))
+                        else:
+                            fo.write("    can%s.dgn.iso.net.send_request([0x3E" % (int(1)))
+                            
+                            for i in range(2,len(Diag_Service),2):
+                                fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
+
+                            fo.write("], 'PHYSICAL') \n")
+
+
                         fo.write("    time.sleep(1)\n" )
                         fo.write("\n")
                         fo.write("    Expec_res = '%s'\n"%Expec_res)
