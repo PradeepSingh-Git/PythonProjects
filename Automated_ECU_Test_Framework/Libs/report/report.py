@@ -17,13 +17,14 @@ CHANGE LOG
 import HTML
 import datetime
 import fileinput
+import os
 
 
 
 
 class HTMLReport(object):
 
-    def __init__(self, tlaName='', swVersion='', hwVersion='', author=''):
+    def __init__(self, tlaName='', projName='', swVersion='', hwVersion='',network='', author=''):
         '''
         Description: Constructor.
         Parameter 'tlaName' is a string with the name of the SW being tested.
@@ -40,8 +41,10 @@ class HTMLReport(object):
         self.tt_noks       = 0
         # Store parameters
         self.tla_name      = tlaName
+        self.prj_name      = projName
         self.sw_ver        = swVersion
         self.hw_ver        = hwVersion
+        self.network       = network
         self.author        = author
 
 
@@ -109,20 +112,36 @@ class HTMLReport(object):
         self.reportTestListColStyles         = ['background-color:white','background-color:white;white-space: pre','background-color:white','background-color:white']
         self.reportTestListColAlign          = ['center','left','center','center']
         self.reportTestCaseColAlign          = ['left','center','left','left','left']
-        self.reportTestCaseColStyles         = ['background-color:white;white-space: pre','background-color:white','background-color:white','background-color:white','background-color:white;white-space: pre']
+        self.reportTestCaseColStyles         = ['background-color:white;white-space: pre','background-color:white','background-color:white;white-space: pre','background-color:white;white-space: pre','background-color:white;white-space: pre']
         self.reportTestListBuffer            = []
 
+
+    def __createReportDir(self,directory):
+        '''
+        Description: Creates Report folder structure.
+                     Must be used within the class.
+        '''
+        try:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+        except OSError:
+            print ('Error: Creating directory. ' +  directory)
 
 
     def __start_html(self):
         '''
-        Description: Updates the html file with the test report data.
-                     Must be used within the class.
+        Description: Creates Report folder structure and Updates the html report
+                     file with the test report data.Must be used within the class.
                      Not accessible outside class as it's a private function.
-
         '''
+        self.currentDT    = datetime.datetime.now()
+        self.reportDir    = (self.prj_name + '_' + str(self.currentDT.day)+'.'+str(self.currentDT.month)+'.'+str(self.currentDT.year) + '_' + str(self.currentDT.hour)+'.'+str(self.currentDT.minute))
+        self.reportSubDir = self.tla_name
+
+        self.__createReportDir('./' + self.reportDir + '/' + self.reportSubDir + '/')
+
         self.reportFileName = self.tla_name + "_Report.html"
-        self.fileObj        = file(self.reportFileName,'w+')
+        self.fileObj        = file(('./' + self.reportDir + '/' + self.reportSubDir + '/' + self.reportFileName),'w+')
 
 
 
@@ -139,16 +158,15 @@ class HTMLReport(object):
         self.fileObj.write(self.htmlGapStr)
 
         #------------------UPDATE REPORT INFORMATION DATA-------------------------------------#
-        self.currentDT = datetime.datetime.now()
         self.currentDate = str(self.currentDT.day)+'-'+str(self.currentDT.month)+'-'+str(self.currentDT.year)
         self.currentTime = str(self.currentDT.hour)+':'+str(self.currentDT.minute)
 
-        self.reportInformationTableData[0][1] = self.tla_name
+        self.reportInformationTableData[0][1] = self.prj_name
         self.reportInformationTableData[1][1] = self.currentDate
         self.reportInformationTableData[2][1] = self.currentTime
         self.reportInformationTableData[3][1] = self.sw_ver
         self.reportInformationTableData[4][1] = self.hw_ver
-        self.reportInformationTableData[5][1] = 'CAN'
+        self.reportInformationTableData[5][1] = self.network
         self.reportInformationTableData[6][1] = self.author
 
 
@@ -188,7 +206,7 @@ class HTMLReport(object):
         '''
         self.fileObj.close()
 
-        self.tempFileObj = fileinput.FileInput(self.reportFileName, inplace=1)
+        self.tempFileObj = fileinput.FileInput(('./' + self.reportDir + '/' + self.reportSubDir + '/' + self.reportFileName), inplace=1)
         for line in self.tempFileObj:
             if ">OK<" in line:
                 line = line.replace('background-color:white','background-color:#24FE2B')
@@ -200,8 +218,8 @@ class HTMLReport(object):
             print line
 
         self.tempFileObj.close()
-
         self.__generate_summary_report()
+
 
 
     def __generate_summary_report(self):
@@ -210,19 +228,19 @@ class HTMLReport(object):
                      Must be called at the end of the script.
         '''
         self.summaryReport  = "Summary.html"
-        self.summaryFileObj = file(self.summaryReport,'w+')
+        self.summaryFileObj = file('./' + self.reportDir +'/'+ self.summaryReport,'w+')
 
         #-------------------------SUMMARY REPORT HEADING-------------------------------------#
         self.summaryFileObj.write(self.summaryHtmlHeaderStr)
         self.summaryFileObj.write(self.htmlGapStr)
 
         #-------------------------UPDATE SUMMARY REPORT INFORMATION DATA----------------------#
-        self.summaryInformationData[0][1]     = "MCS3"
+        self.summaryInformationData[0][1]     = self.prj_name
         self.summaryInformationData[1][1]     = self.currentDate
         self.summaryInformationData[2][1]     = self.currentTime
         self.summaryInformationData[3][1]     = self.sw_ver
         self.summaryInformationData[4][1]     = self.hw_ver
-        self.summaryInformationData[5][1]     = 'CAN'
+        self.summaryInformationData[5][1]     = self.network
         self.summaryInformationData[6][1]     = self.author
 
         self.summaryFileObj.write(self.summaryHtmlInfoBlockStr)
@@ -242,13 +260,15 @@ class HTMLReport(object):
 
 
         #------------------UPDATE TEST CASES LIST TABLE -------------------------------------#
-        hrefLinkPre = ('''<a href="%s"  target="_blank">''' %self.reportFileName)
+        hrefLinkPre = ('''<a href="%s"  target="_blank">''' %(self.reportSubDir +'/'+ self.reportFileName))
         hrefLinkPost = '''</a>'''
         self.summaryTestListBuffer.append([1,(hrefLinkPre + self.tla_name + hrefLinkPost), str(self.tt_oks + self.tt_noks), str(self.tt_oks), str(self.tt_noks)])
         self.summaryFileObj.write(HTML.table(self.summaryTestListBuffer, header_row=self.summaryTestListColHeaders,col_align=self.summaryTestListColAlign, col_styles=self.summaryTestListColStyles, col_width=self.summaryTestListColWidth, cellpadding=0, cellspacing=0, width=1235, style='border-collapse: collapse;table-layout:fixed;width:927pt;background-color:#0080C0', border='1'))
 
-
         self.summaryFileObj.close()
+
+        #Invoke Summary Report html file
+        os.startfile(os.getcwd() + '/' + self.reportDir +'/'+ self.summaryReport)
 
 
 
@@ -354,3 +374,5 @@ class HTMLReport(object):
         self.__update_html()
         self.__finish_html()
 
+    def get_log_dir(self):
+        return (os.getcwd() + '/' + self.reportDir + '/' + self.reportSubDir + '/' + self.reportSubDir + '_logfile.txt')
