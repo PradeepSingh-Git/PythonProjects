@@ -112,7 +112,7 @@ class HTMLReport(object):
         self.reportTestListColStyles         = ['background-color:white','background-color:white;white-space: pre','background-color:white','background-color:white']
         self.reportTestListColAlign          = ['center','left','center','center']
         self.reportTestCaseColAlign          = ['left','center','left','left','left']
-        self.reportTestCaseColStyles         = ['background-color:white;white-space: pre','background-color:white','background-color:white','background-color:white','background-color:white;white-space: pre']
+        self.reportTestCaseColStyles         = ['background-color:white;white-space: pre','background-color:white','background-color:white;white-space: pre','background-color:white;white-space: pre','background-color:white;white-space: pre']
         self.reportTestListBuffer            = []
 
 
