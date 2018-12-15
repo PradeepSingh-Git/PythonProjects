@@ -106,7 +106,7 @@ class HTMLReport(object):
         self.reportTestCaseTableHeaders      = ['Test Steps', 'Result', 'Actual', 'Expected', 'Comments']
         self.reportInformationTableColWidth  = [200,200]
         self.reportTestListColWidth          = [64, 440, 100, 100]
-        self.reportTestCaseColWidth          = [440, 64, 200, 200, 200]
+        self.reportTestCaseColWidth          = [440, 64, 300, 200, 200]
         self.reportInformationTableColStyles = ['font-weight:bold','font-weight:normal']
         self.reportTestListColHeaderStyles   = ['background-color:#E3E3E3','background-color:#E3E3E3','background-color:#24FE2B','background-color:#F53405']
         self.reportTestListColStyles         = ['background-color:white','background-color:white;white-space: pre','background-color:white','background-color:white']
