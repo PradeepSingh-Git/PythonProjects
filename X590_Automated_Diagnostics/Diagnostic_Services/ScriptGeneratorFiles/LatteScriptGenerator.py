@@ -21,38 +21,26 @@ File History
 Comments End
 '''
 
-import os
-import xlrd
-#import xlutils
-from os.path import exists
 import sys
-import win32com.client, win32api, win32con, pythoncom
-import py_compile #for .pyc file
-#import termcolor
+import xlrd
+import py_compile
+
 
 if len(sys.argv) != 4:
     print "\nWrong Input !!"
     print "\nExpected Format is : LatteScriptGenerator.py TestcaseFileName TestcaseSheetName TestcaseDirectoryPath\n"
     sys.exit()
 
+
 print 'File Name : ', str(sys.argv[1])
 print 'FileSheet Name : ', str(sys.argv[2])
 print 'Path Name : ', str(sys.argv[3])
+
 testcaseFile = str(sys.argv[1])
 testcaseFileSheet = str(sys.argv[2])
 testcaseDirectory = sys.argv[3]
 
-if ".xlsm" in testcaseFile:
-    testcaseScriptFile = testcaseFile.replace('.xlsm', '')
-elif ".xlsx" in testcaseFile:
-    testcaseScriptFile = testcaseFile.replace('.xlsx', '')
-elif ".XLSX" in testcaseFile:
-    testcaseScriptFile = testcaseFile.replace('.XLSX', '')
-elif ".XLS" in testcaseFile:
-    testcaseScriptFile = testcaseFile.replace('.XLS', '')
-elif ".xls" in testcaseFile:
-    testcaseScriptFile = testcaseFile.replace('.xls', '')
-
+testcaseScriptFile = testcaseFile.split('.')[0]
 testcaseScriptFile = testcaseScriptFile + "_" + testcaseFileSheet
 
 py_compile.compile("LatteScriptGenerator.py")
@@ -102,7 +90,6 @@ def file_creation():
 file_creation() #Function call
 
 
-
 def write_batchfile():
     '''
     Description: This Function writes to batch file that executes corresponding .py file
@@ -112,7 +99,22 @@ batchfo.close()
 
 write_batchfile() #Function call
 
-def lear_copyPrint():
+'''
+Description:Extracting valus from sheet tla_library e.g TLA,Component_VERSION,SW_BRANCH etc.
+'''
+TLA = xl_sheet.cell(2,2).value
+Component_VERSION = xl_sheet.cell(4,2).value
+TLA_VERSION = xl_sheet.cell(6,2).value
+SW_BRANCH = xl_sheet.cell(8,2).value
+SVN_REVISION = xl_sheet.cell(10,2).value
+HW_VERSION = xl_sheet.cell(12,2).value
+AUTHOR =  xl_sheet.cell(14,2).value
+TLA_Description = xl_sheet.cell(16,2).value
+REPORT_NAME = TLA_Description + "_" + testcaseFileSheet
+
+
+#----------------------------Generate Copyright header-------------------------------------------#
+def writeCopyright():
     '''
     Description: This Function import packages in .py file
     '''
@@ -131,50 +133,16 @@ def lear_copyPrint():
     fo.write("\nimport Tkinter as tk")
     fo.write("\nimport tkMessageBox")
 
-lear_copyPrint() #Function call
-
-
-'''
-Description:Extracting valus from sheet tla_library
-e.g TLA,Component_VERSION,SW_BRANCH etc.
-'''
-
-TLA = xl_sheet.cell(2,2).value
-Component_VERSION = xl_sheet.cell(4,2).value
-TLA_VERSION = xl_sheet.cell(6,2).value
-SW_BRANCH = xl_sheet.cell(8,2).value
-SVN_REVISION = xl_sheet.cell(10,2).value
-HW_VERSION = xl_sheet.cell(12,2).value
-AUTHOR =  xl_sheet.cell(14,2).value
-TLA_Description = xl_sheet.cell(16,2).value
-REPORT_NAME = TLA_Description + "_" + testcaseFileSheet
-
-def Report_Header():
-    '''
-    Description:This function write all extracted values(from excel sheet) regarding the report header in .py file
-    '''
-    fo.write("\n\n\n# Report Header Variables")
-    fo.write("\nAUTHOR = '%s'" %AUTHOR)
-    fo.write("\nTLA = '%s'" % TLA )
-    fo.write("\nTLA_VERSION = '%s'" % TLA_VERSION)
-    fo.write("\nSVN_REVISION = '%s'" % SVN_REVISION)
-    fo.write("\nHW_VERSION = '%s'" %  HW_VERSION)
-    fo.write("\nSW_BRANCH = '%s'" %SW_BRANCH)
-    fo.write("\nComponent_VERSION = '%s'" % Component_VERSION)
-    fo.write("\nTLA_Description = '%s'\n" % TLA_Description)
-    fo.write("\nREPORT_NAME = '%s'\n" % REPORT_NAME)
-    fo.write('\n#' + div * 4 + '\n')
-Report_Header() #function call
-
-def Proj_Path():
+#----------------------------Generate Path Settings-----------------------------------------------#
+def writePathSettings():
     '''
     Description: This function write all project related path to py file.
     Example:
          Tools_PATH,CODE_PATH
     creates object for t32,com
     '''
-    fo.write("\nREPORT_API_PATH = os.path.abspath(r'../latte_libs/report_v2_0_0')")
-    fo.write("\nCOM_API_PATH = os.path.abspath(r'../latte_libs/com_v1_8_0')\n")
+    fo.write("\n\nREPORT_API_PATH = os.path.abspath(r'../latte_libs/report')")
+    fo.write("\nCOM_API_PATH = os.path.abspath(r'../latte_libs/com')\n")
 
     fo.write("\n\n# Adding paths for loading correctly .py libraries")
     fo.write("\nsys.path.append(REPORT_API_PATH)")
@@ -183,237 +151,90 @@ def Proj_Path():
     fo.write("\n\nfrom report import *")
     fo.write("\nfrom com import *")
 
+#----------------------------Generate Report Settings---------------------------------------------#
+def writeReportSettings():
+    '''
+    Description:This function write all extracted values(from excel sheet) regarding the report header in .py file
+    '''
+    fo.write("\n\n\n# Report Header Variables")
+    fo.write("\nAUTHOR = '%s'" %AUTHOR)
+    fo.write("\nTLA = '%s'" % TLA )
+    fo.write("\nPROJECT_NAME = 'JLR X590 BCCM'" )
+    fo.write("\nSW_VERSION = '%s'" % SVN_REVISION)
+    fo.write("\nHW_VERSION = '%s'" %  HW_VERSION)
+    fo.write("\nNETWORK_TYPE = 'CAN'")
     fo.write("\n\n# Create the report object, specifying the test data")
-    fo.write("\nreport = ITReport(TLA, TLA_VERSION, SW_BRANCH, SVN_REVISION, HW_VERSION, AUTHOR,REPORT_NAME)")
+    fo.write("\nreport = HTMLReport(TLA, PROJECT_NAME, SW_VERSION, HW_VERSION, NETWORK_TYPE, AUTHOR)")
+
+#----------------------------Generate CAN,LIN,FR Channel Settings---------------------------------#
+def writeChannelSettings():
+    '''
+    Description:This for Loop Extract can channel baud rate,Channel ID,LDf,DBC.
+    it Checks CAN Access req. and according to that set channel
+    '''
+    fo.write("\n\n")
+    fo.write("#################################################################\n")
+    fo.write("##               Set CAN,LIN,FR Channels                       ##\n")
+    fo.write("#################################################################\n")
+    fo.write("\ncom = Com('VECTOR')")
+    fo.write("\ncanObj = com.open_can_channel(int(%s),int(%s))" % (xl_sheet.cell(21,3).value, xl_sheet.cell(21,4).value))
+
+#----------------------------Generate Precondition Statements-------------------------------------#
+def writePreconditions():
+    fo.write("\n\n")
+    fo.write("#################################################################\n")
+    fo.write("##      Load dbc,Periodic Tester Present,Periodic NM message   ##\n")
+    fo.write("#################################################################\n")
+    fo.write("\ncanObj.load_dbc('%s')" % (xl_sheet.cell(21,5).value))
+    fo.write("\ncanObj.send_cyclic_frame('BCCM_NM51F',100)")
+    fo.write("\ncanObj.dgn.ecu_reset(0x01)" )
+    fo.write("\ncanObj.dgn.start_periodic_tp()" )
+    fo.write("\ntime.sleep(1)\n" )
+
+#----------------------------Generate GetActualResponseFrames() Function--------------------------#
+def writeGetActualRespDef():
+    fo.write("\ndef GetActualResponseFrames():\n")
+    fo.write("    response_str = ''\n")
+    fo.write("    response_str = canObj.dgn.req_info_raw().split('Rsp:')[1]\n")
+    fo.write("    response_str = response_str.replace('[','')\n")
+    fo.write("    response_str = response_str.replace(']','')\n")
+    fo.write("    response_str = response_str.replace(' ','')\n")
+    fo.write("    return response_str\n\n\n")
 
 
-Proj_Path()#Function Call
-
-'''
-Following code extracts macros and its respected values from tla_library sheet
-Example:
-OK = 1
-NOK =0
-these extracted values are written to the file
-'''
-NumRows=xl_sheet.nrows
-def Macro_def():     #defining macros
-    fo.write("\n\n\n# Macro Definition\n")
-    macro_var = 0
-    while(str(xl_sheet.cell(macro_var,1).value) != 'Name'):  #to start to write macros first find "name" column
-      macro_var+=1
-    macro_var+=1
-
-    while(str(xl_sheet.cell(macro_var,1).value) != 'End of test'):  #scan rows while 'End of test' string row in excel sheet not found
-        #raw_input ('enter')
-        if(xl_sheet.cell(macro_var,1).value != ''):
-            if(xl_sheet.cell(macro_var,2).value != ''):
-                 MICRO_NAME =  xl_sheet.cell(macro_var,1).value
-                 MICRO_VALUE =  (xl_sheet.cell(macro_var,2).value)
-                 if isinstance(MICRO_VALUE,float):
-                   MICRO_VALUE = int(MICRO_VALUE)
-                 fo.write("%s = %s "  % (MICRO_NAME,MICRO_VALUE)+ '\n')
-        macro_var+=1
-
-Macro_def() #Function call
-
-#-----------------------------------------------------------Set LIN and CAN Channels---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-fo.write("\n#Set CAN/LIN  Channel")
-
-com_cntcan=0  #to assign can1,can2...
-
-com_cntlin=0  #to assign lin1,lin2...
-
-can_cnt=0  #count Total number of can channels
-
-lin_cnt=0 ##count Total number of lin channels
-
-
-can_chlist=[] #created can channel list to represent the activated CAN Chanel's Status
-
-
-lin_chlist=[]  #created lin channel list to represent the activated LIN Chanel's Status
-
-Active_CANs = 0
-Active_Lins = 0
-'''
-Description: Extracts CAN access request values from sheet
-Example:
-        CAN1 = YES
-        CAN2 = NO
-        LIN1 = YES
-'''
-can1 =xl_sheet.cell(21,2).value
-can2 =xl_sheet.cell(22,2).value
-can3 =xl_sheet.cell(23,2).value
-can4 =xl_sheet.cell(24,2).value
-
-#Extract LIN Information from Excelsheet(tla_library)
-lin1 =xl_sheet.cell(25,2).value
-lin2 =xl_sheet.cell(26,2).value
-lin3 =xl_sheet.cell(27,2).value
-lin4 =xl_sheet.cell(28,2).value
-
-cans = [can1,can2,can3,can4]  #stored all CAN's in one var
-
-lins = [lin1,lin2,lin3,lin4]  #stored all LIN's in one var
-
-#-------------------------------------------------Loading DBC's & Fixing BaudRates for all Assigned CAN & LIN Channels-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-'''
-Description:This for Loop Extract can channel baud rate,Channel ID,LDf,DBC.
-it Checks CAN Access req. and according to that set channel
-Example:
-       if CAN1 = YES
-       set can channel
-       can1 = com.open_can_channel(int(0.0),int(500000.0))
-       can1.load_dbc(r'C:\BMW_MOTORRAD\BCL\trunk\04_SPECIFICATIONS\Customer\Bus communication\CAN\V080\MR_CAN_2010_V080_BCO_20140319.dbc')
-'''
-
-for index in range(len(cans)):
-  can_cnt+=1
-  if(str(cans[index])=='YES'):
-     #can_cnt+=1
-    Active_CANs +=1
-    #str(cans[index] = str(cans[index]).split('CAN')[1]
-    can_chlist.append(1) # store 1 if can present
-    if (xl_sheet.cell(21+index,3).value != '') and (xl_sheet.cell(21+index,4).value != '')and (xl_sheet.cell(21+index,5).value != ''): #check all credentials are Provided
-      fo.write("\ncom = Com('VECTOR')")
-      fo.write("\ncan%s = com.open_can_channel(int(%s),int(%s))"%(can_cnt,xl_sheet.cell(21+index,3).value,xl_sheet.cell(21+index,4).value))
-#       fo.write("\ncan%s.load_dbc(r'%s')" %(can_cnt,xl_sheet.cell(21,5).value))
-      fo.write("\n# Initialize Diagnostics")
-      fo.write("\ncan%s._init_dgn()\n" %(can_cnt))
-      fo.write("\ncan%s.load_dbc('%s')\n" %(can_cnt,xl_sheet.cell(21,5).value))
-    else:
-      print "User Activated the CAN Channel " +str(index+1)+' with missing credentials of Baud Rate & Path DBC'
-      if(xl_sheet.cell(21+index,3).value == ''):
-          print "Missing Channel ID of CAN" +str(index+1)+ " Channel"
-          sys.exit()
-      if(xl_sheet.cell(21+index,4).value == ''):
-          print "Missing Baud Rate of CAN" +str(index+1) + " Channel"
-          sys.exit()
-      if(xl_sheet.cell(21+index,5).value == ''):
-          print "Missing Path DBC/LDF of CAN" +str(index+1) + " Channel"
-          sys.exit()
-
-  else:
-    can_chlist.append(0)#  store 0 if its not exist
-print "\nTotal Active CAN Channels:" +str(Active_CANs) +"\n"
-
-
-'''
-Description:This for Loop Extract lin channel baud rate,Channel ID,its LDf,DBC.
-it Checks lin Access req. and according to that set channel
-Example:
-       if LIN1 = YES
-       set lin channel
-       lin1 = com.open_lin_channel(int(1.0),r'C:\BMW_MOTORRAD\BCL\trunk\04_SPECIFICATIONS\Customer\Bus communication\LIN\MR_LED_LIN_2010_V050_20140319.ldf')
-'''
-
-for index in range(len(lins)):
-##  print 'Current lin :', lins[index]
-  lin_cnt+=1
-  if(str(lins[index])=='YES'):
-    #lin_cnt+=1
-    Active_Lins +=1
-    lin_chlist.append(1) # store 1 if can present
-    if (xl_sheet.cell(25+index,3).value != '') and (xl_sheet.cell(25+index,5).value != ''):  #check all credentials are Provided
-      fo.write("\nlin%s = com.open_lin_channel(int(%s),r'%s')\n"%(lin_cnt,xl_sheet.cell(25+index,3).value,xl_sheet.cell(25+index,5).value))
-    else:
-       print "User Activated the LIN Channel"+str(index+1)+' with invalid credentials of Baud Rate & Path DBC'
-       if(xl_sheet.cell(25+index,3).value == ''):
-          print "Missing Channel ID of LIN" +str(index+1)+ " Channel"
-          sys.exit()
-       if(xl_sheet.cell(25+index,5).value == ''):
-          print "Missing Path DBC/LDF of LIN" +str(index+1) + " Channel"
-          sys.exit()
-  else:
-    lin_chlist.append(0) # store 0 if its not exist
-print "\nTotal Active Lin Channels:" +str(Active_Lins) +"\n"
-
-
-fo.write("\n#################################################################\n")
-fo.write("## Send Periodic Tester Present while doing diagnostics  ##\n")
-fo.write("#################################################################\n")
-fo.write("can1.dgn.ecu_reset(0x01)\n" )
-fo.write("can1.dgn.start_periodic_tp()\n" )
-fo.write("time.sleep(3)\n" )
+#----------------------------Generate InvokeMessageBox() Function------------  -------------------#
+def writeInvokeMsgBoxDef():
+    fo.write("\ndef InvokeMessageBox(MessageStr):\n")
+    fo.write("    MessageStr = MessageStr")
+    fo.write(r" + ")
+    fo.write(r""" "\nPress OK after performing the action." """)
+    fo.write("\n")
+    fo.write("    root = tk.Tk()\n")
+    fo.write("    root.withdraw()\n")
+    fo.write("""    root.attributes("-topmost", True)\n""")
+    fo.write("""    tkMessageBox.showinfo("Manual Input Required", MessageStr)\n""")
+    fo.write("    root.destroy()\n")
 
 
 
-#-------------------------------------------Log File Initializations-----------------------------------------
-fo.write("\n# Name of the logfile where the frames will be logged\n")
-fo.write("\ncan_log_file = REPORT_NAME +'_dgn_logfile.txt'\n")
-fo.write("\nLog_AllFrames = []\n")
+writeCopyright()          #Function call
+writePathSettings()       #Function Call
+writeReportSettings()     #function call
+writeChannelSettings()    #function call
+writePreconditions()      #function call
+writeGetActualRespDef()   #function call
+writeInvokeMsgBoxDef()    #function call
 
 
-#-------------------------------------------Generate GetActualResponseFrames() Function-----------------------------------------
-fo.write("\ndef GetActualResponseFrames():\n")
-
-fo.write("    response_str = ''\n")
-fo.write("    readByte = ''\n")
-fo.write("    for frame_index in range(len(can1.dgn.iso.net._resp_frames)):\n")
-fo.write("          if len(can1.dgn.iso.net._resp_frames) > 1 :\n")
-fo.write("              if (frame_index == 0):\n")
-fo.write("                  frameNewList = can1.dgn.iso.net._resp_frames[frame_index][3][2:8]\n")
-fo.write("              else:\n")
-fo.write("                  frameNewList = can1.dgn.iso.net._resp_frames[frame_index][3][1:8]\n")
-fo.write("          else:\n")
-fo.write("              frameNewList = can1.dgn.iso.net._resp_frames[frame_index][3][1:8]\n")
-fo.write("          for frame_element in range(len(frameNewList)):\n")
-fo.write("              readByte = str(hex(frameNewList[frame_element]))\n")
-fo.write("              readByte = readByte.replace('0x','')\n")
-fo.write("              if len(readByte) == 1:\n")
-fo.write("                  readByte = '0' + readByte\n")
-fo.write("              response_str +=readByte\n")
-
-fo.write("    response_str = response_str.replace('0x','')\n")
-fo.write("    response_str = response_str.upper()\n")
-fo.write("    return response_str\n\n\n")
-
-#---------------------------------------Compare Results-----------------------------------------------------------------
-fo.write("\ndef CompareResults(ExpectedRes,ActualRes):\n")
-fo.write("    returnVal = True\n")
-fo.write("    temp_List = []\n")
-fo.write("    for i in range(0,len(ExpectedRes),2):\n")
-fo.write("          byteStr = ''\n")
-fo.write("          byteStr = byteStr + ExpectedRes[i]\n")
-fo.write("          byteStr = byteStr + ExpectedRes[i+1]\n")
-fo.write("          byteHex_str = '0x'+ byteStr\n")
-fo.write("          temp_List.append(byteHex_str)\n")
-fo.write("    for j in range(0,len(temp_List)):\n")
-fo.write("          if(ActualRes[j] == int(temp_List[j],16)):\n")
-fo.write("                  continue\n")
-fo.write("          else:\n")
-fo.write("                  returnVal = False\n")
-
-fo.write("    return returnVal\n\n\n")
-
-#-------------------------------------------Generate InvokeMessageBox() Function-----------------------------------------
-fo.write("\ndef InvokeMessageBox(MessageStr):\n")
-fo.write("    MessageStr = MessageStr")
-fo.write(r" + ")
-fo.write(r""" "\nPress OK after performing the action." """)
-fo.write("\n")
-fo.write("    root = tk.Tk()\n")
-fo.write("    root.withdraw()\n")
-fo.write("""    root.attributes("-topmost", True)\n""")
-fo.write("""    tkMessageBox.showinfo("Manual Input Required", MessageStr)\n""")
-fo.write("    root.destroy()\n")
 
 '''
 Test Case Definition
 '''
-
-
-#fo.write('\n#' + div * 4 + '\n')
 #-------------------------------------------excel columns function-----------------------------------------
 def Excel_columns():
     '''
     Description: This function assigns names to excel sheet columns.
     '''
-
     global Doors_Req
     global Test_Type
     global IO_Type
@@ -485,32 +306,18 @@ def Test_Header(ETest_Case_Cnt,Etest_name,Etest_case_desc,Etest_case_reqs):
         fo.write("\n#######################")
         fo.write("\n## Test Case %s       ##" %ETest_Case_Cnt)
         fo.write("\n#######################"+ '\n' + '\n')
-        file_string='def test_'+ str(ETest_Case_Cnt)+ '():\n    test_case_name = '
-        fo.write(file_string)
+        fo.write('def test_%s():\n' %(str(ETest_Case_Cnt)))
 
-        '''
-        if user use '' to highlight some part script converts '' to "" to avoid error
-        '''
         TD = Etest_name.replace('\'','\"')  #in Test Name Statement replace ' with " for indentation
-
         TD = TD.replace('\n',' ')   #in Test Name Statement replace \n with ' ' for indentation
-
-        fo.write("'\\n\\nTest Case %s: %s'\n    "  %  (ETest_Case_Cnt,TD)) #Write Test Name
-
         TN = Etest_case_desc.replace('\n',' ')  #in Test Description Statement replace \n with ' ' for indentation
         TN = TN.replace('\'','\"')  #in Test Description Statement replace ' with " for indentation
 
-        fo.write("test_case_desc = '%s'\n    " %TN) #Write Test Description
-
-        fo.write("test_case_reqs = '%s'\n    " % Etest_case_reqs.replace('\n',' ') ) #Write Test Requirment ID
-        file_string="report.add_test_case(test_case_name, test_case_desc, test_case_reqs)\n" #Write Report
-        fo.write(file_string)
-        fo.write("    test_Conclusion = 'Test Not started'\n")
-        fo.write("    can1.dgn.iso.net._all_frames = []\n")
-        fo.write("    can1.dgn.iso.net._resp_frames = []\n")
-        fo.write("    can1.stop_tx_frames()\n")
-        fo.write(r"    response_str = '\n'")
-        fo.write("\n    print test_case_name\n \n \n    ")
+        fo.write("    test_case_name = 'Test Case %s: %s'\n" % (ETest_Case_Cnt,TD))#Write Test Name
+        fo.write("    test_case_desc = '%s'\n" %TN) #Write Test Description
+        fo.write("    test_case_reqs = '%s'\n" % Etest_case_reqs.replace('\n',' ') ) #Write Test Requirment ID
+        fo.write("    print test_case_name\n\n")
+        fo.write("    report.add_test_case(test_case_name, test_case_desc, test_case_reqs)\n\n")
 
 
 
@@ -522,19 +329,19 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
 
     if(xl_sheet.cell(curr_row,Doors_Req).value != ''):   # Check For Proper Data Entry in Excel sheet
         if(xl_sheet.cell(curr_row,Test_Type).value != 'TH'):
-                 raw_input("\n**Error occured,to check error press Enter\n")
-                 print("\nwrong data entered column 1 \n")
-                 print "check row no: " +str(curr_row) + "\n"
-                 print "check Column no:" +str(Test_Type) + "\n"
-                 sys.exit()
+            raw_input("\n**Error occured,to check error press Enter\n")
+            print("\nwrong data entered column 1 \n")
+            print "check row no: " +str(curr_row) + "\n"
+            print "check Column no:" +str(Test_Type) + "\n"
+            sys.exit()
 
     if(xl_sheet.cell(curr_row,Test_Type).value != 'TH'):   # Check For Proper Data Entry in Excel sheet
         if(xl_sheet.cell(curr_row,Test_Type).value == ''):
             if(xl_sheet.cell(curr_row,IO_Type).value != ''):
-                 raw_input("\n**Error occured,to check error press Enter\n")
-                 print("\nSelect TH or TS \n")
-                 print "check row no: " +str(curr_row) + "\n"
-                 print "check Column no:" +str(IO_Type) + "\n"
+                raw_input("\n**Error occured,to check error press Enter\n")
+                print("\nSelect TH or TS \n")
+                print "check row no: " +str(curr_row) + "\n"
+                print "check Column no:" +str(IO_Type) + "\n"
 
     if xl_sheet.cell(curr_row,Test_Type).value == 'TH':  #New Test Case
 
@@ -587,7 +394,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
               if xl_sheet.cell(curr_row,Type).value == 'DIAG':
 
                   #Extract values from excel sheet
-                  test_step_desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
+                  test_step_Desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
                   comments = xl_sheet.cell(curr_row,Comments).value #Comments
                   Expec_res_raw=str(xl_sheet.cell(curr_row,Test_CondValue).value) #Expected value of Test Step
                   Expec_res_raw=Expec_res_raw.split('.')[0]
@@ -605,60 +412,46 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                   if Diag_Service[0:2]=='11': # Check for diagnostic service ID is "RESET"
 
                         PID=Diag_Service[2:4] #Extract Reset Type
-                        
+
                         print_row = int(curr_row)+1
 
-                        fo.write("\n    #######################################")  #Print row number of excel sheet
-                        fo.write("\n    #Code block generated for row no = %s  #"%print_row)
-                        fo.write("\n    ##################################### #\n")
+                        fo.write("    #######################################\n")  #Print row number of excel sheet
+                        fo.write("    #Code block generated for row no = %s  #\n" %print_row)
+                        fo.write("    ##################################### #\n\n")
 
-                        fo.write("\n    ################################\n")  # Reset By Diagnostics
+                        fo.write("    ################################\n")  # Reset By Diagnostics
                         fo.write("    ## Reset By Diagnostics  ##\n")
-                        fo.write("    ################################\n")
+                        fo.write("    ################################\n\n")
 
-                        TD = test_step_desc.replace('\n',' ')
+                        TD = test_step_Desc.replace('\n',' ')
                         TD = TD.replace('\'','\"')
 
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
-                        fo.write("    test_Result = False\n" )
-                        fo.write(r"    comment = '\n'" )
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    test_step_Result = False\n" )
+                        fo.write(r"    test_step_Comment = '\n'" )
                         fo.write("\n")
-                        fo.write(r"    response_str = '\n'" )
+                        fo.write(r"    test_step_ResponseStr = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
 
-                        if(len(Diag_Service) <= 4):
-                            if(PID == ''):
-                                fo.write("    can%s.dgn.iso.net.send_request([0x11, ], 'PHYSICAL')\n" % (int(1)))  
-                            else:
-                                fo.write("    can%s.dgn.ecu_reset(%s)\n" % (int(1),'0x'+PID))
-                        else:
-                            fo.write("    can%s.dgn.iso.net.send_request([0x11" % (int(1)))
-                            
-                            for i in range(2,len(Diag_Service),2):
-                                fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
-
-                            fo.write("], 'PHYSICAL') \n")
-                        
+                        fo.write("    canObj.dgn.ecu_reset(%s)\n" % ('0x'+PID))
                         fo.write("    time.sleep(1)\n" )
+
                         fo.write("\n")
                         fo.write("    Expec_res = '%s'\n"%Expec_res)
                         fo.write("    Actual_res = GetActualResponseFrames()\n")
                         fo.write("\n")
                         fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                        fo.write("          result = True\n")
-                        fo.write("          comment ='Reset Successful.'\n")
+                        fo.write("          test_step_Result = True\n")
+                        fo.write("          test_step_Comment ='Reset Successful.'\n")
                         fo.write("    else: \n" )
-                        fo.write("          result = False\n")
-                        fo.write("          comment ='Unable to reset.Test Fails:!!'\n")
+                        fo.write("          test_step_Result = False\n")
+                        fo.write("          test_step_Comment ='Unable to reset.Test Fails:!!'\n")
                         fo.write("\n")
-                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
-                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
-                        fo.write(r"          response_str =  response_str + '\n'")
+                        fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
                         fo.write("\n")
-                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile
+                        fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
+
 
                   elif Diag_Service[0:2]=='31': # Check for diagnostic service ID is "ROUTINE ID"
 
@@ -674,25 +467,24 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ##          ROUTINES          ##\n")
                         fo.write("    ################################\n")
 
-                        TD = test_step_desc.replace('\n',' ')
+                        TD = test_step_Desc.replace('\n',' ')
                         TD = TD.replace('\'','\"')
 
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
-                        fo.write("    test_Result = False\n" )
-                        fo.write(r"    comment = '\n'" )
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    test_step_Result = False\n" )
+                        fo.write(r"    test_step_Comment = '\n'" )
                         fo.write("\n")
-                        fo.write(r"    response_str = '\n'" )
+                        fo.write(r"    test_step_ResponseStr = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
 
 
                         if(PID == ''):
-                            fo.write("    can%s.dgn.iso.net.send_request([0x31, ], 'PHYSICAL')\n" % (int(1)))  
+                            fo.write("    canObj.dgn.iso.net.send_request([0x31, ], 'PHYSICAL')\n")
 
                         else:
-                            fo.write("    can%s.dgn.iso.net.send_request([0x31" % (int(1)))
-                            
+                            fo.write("    canObj.dgn.iso.net.send_request([0x31")
+
                             for i in range(2,len(Diag_Service),2):
                                 fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
 
@@ -704,17 +496,15 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    Actual_res = GetActualResponseFrames()\n")
                         fo.write("\n")
                         fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                        fo.write("          result = True\n")
-                        fo.write("          comment ='Routine Execution Succesful.'\n")
+                        fo.write("          test_step_Result = True\n")
+                        fo.write("          test_step_Comment ='Routine Execution Succesful.'\n")
                         fo.write("    else: \n" )
-                        fo.write("          result = False\n")
-                        fo.write("          comment ='Routine Execution Fails:!!'\n")
-                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
-                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
-                        fo.write(r"          response_str =  response_str + '\n'")
+                        fo.write("          test_step_Result = False\n")
+                        fo.write("          test_step_Comment ='Routine Execution Fails:!!'\n")
                         fo.write("\n")
-                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile
+                        fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
+                        fo.write("\n")
+                        fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
 
                   elif Diag_Service[0:2]=='22': # Check for diagnostic service ID is "READ DID"
 
@@ -751,22 +541,21 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ##          Read DID          ##\n")
                         fo.write("    ################################\n")
 
-                        TD = test_step_desc.replace('\n',' ')
+                        TD = test_step_Desc.replace('\n',' ')
                         TD = TD.replace('\'','\"')
 
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
-                        fo.write("    test_Result = False\n" )
-                        fo.write(r"    comment = '\n'" )
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    test_step_Result = False\n" )
+                        fo.write(r"    test_step_Comment = '\n'" )
                         fo.write("\n")
-                        fo.write(r"    response_str = '\n'" )
+                        fo.write(r"    test_step_ResponseStr = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
 
                         if len(Diag_Service) > 6:
-                            fo.write("    can%s.dgn.read_DID_Len_W(%s,%s) \n" % (int(1),PID,Extra_Parameter))
+                            fo.write("    canObj.dgn.read_DID_Len_W(%s,%s) \n" % (PID,Extra_Parameter))
                         else:
-                            fo.write("    can%s.dgn.read_did(%s) \n" % (int(1),PID))
+                            fo.write("    canObj.dgn.read_did(%s) \n" % (PID))
                         fo.write("    time.sleep(0.3)\n" )
                         fo.write("\n")
 
@@ -799,17 +588,16 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                             fo.write("    Actual_res = GetActualResponseFrames()\n")
                             fo.write("\n")
                             fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                            fo.write("          result = True\n")
-                            fo.write("          comment ='Test Successful.'\n")
+                            fo.write("          test_step_Result = True\n")
+                            fo.write("          test_step_Comment ='Test Successful.'\n")
                             fo.write("    else: \n" )
-                            fo.write("          result = False\n")
-                            fo.write("          comment ='Test Fails!!'\n")
-                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
-                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
-                        fo.write(r"          response_str =  response_str + '\n'")
+                            fo.write("          test_step_Result = False\n")
+                            fo.write("          test_step_Comment ='Test Fails!!'\n")
                         fo.write("\n")
-                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile
+                        fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
+                        fo.write("\n")
+                        fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
+
 
                   elif Diag_Service[0:2]=='10': # Check for diagnostic service ID is "Session CTRL DID"
 
@@ -824,37 +612,36 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ##          Session Ctrl  #\n")
                         fo.write("    ################################\n")
 
-                        TD = test_step_desc.replace('\n',' ')
+                        TD = test_step_Desc.replace('\n',' ')
                         TD = TD.replace('\'','\"')
 
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
-                        fo.write("    test_Result = False\n" )
-                        fo.write(r"    comment = '\n'" )
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    test_step_Result = False\n" )
+                        fo.write(r"    test_step_Comment = '\n'" )
                         fo.write("\n")
-                        fo.write(r"    response_str = '\n'" )
+                        fo.write(r"    test_step_ResponseStr = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
 
                         if(len(Diag_Service) <= 4):
                             if PID =='01':
-                                fo.write("    can%s.dgn.default_session() \n" % (int(1))) #evaluation of default session
+                                fo.write("    canObj.dgn.default_session() \n") #evaluation of default session
                             elif PID =='02':
-                                fo.write("    can%s.dgn.programming_session() \n" % (int(1))) #evaluation of programming session
+                                fo.write("    canObj.dgn.programming_session() \n") #evaluation of programming session
                             elif PID =='03':
-                                fo.write("    can%s.dgn.extended_session() \n" % (int(1))) #evaluation of extended session
+                                fo.write("    canObj.dgn.extended_session() \n") #evaluation of extended session
                             elif PID =='':
-                                fo.write("    can%s.dgn.iso.net.send_request([0x10, ], 'PHYSICAL') \n" % (int(1))) #evaluation of No session subfunction
+                                fo.write("    canObj.dgn.iso.net.send_request([0x10, ], 'PHYSICAL') \n") #evaluation of No session subfunction
                             else :
-                                fo.write("    can%s.dgn.iso.service_0x10(%s)\n" % (int(1),'0x'+PID)) #evaluation of internal session
+                                fo.write("    canObj.dgn.iso.service_0x10(%s)\n" % ('0x'+PID)) #evaluation of internal session
                         else:
-                            fo.write("    can%s.dgn.iso.net.send_request([0x10" % (int(1)))
-                            
+                            fo.write("    canObj.dgn.iso.net.send_request([0x10")
+
                             for i in range(2,len(Diag_Service),2):
                                 fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
 
                             fo.write("], 'PHYSICAL') \n")
-                            
+
 
                         fo.write("    time.sleep(0.3)\n" )
                         fo.write("\n")
@@ -862,17 +649,16 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    Actual_res = GetActualResponseFrames()\n")
                         fo.write("\n")
                         fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                        fo.write("          result = True\n")
-                        fo.write("          comment ='Test Successful.'\n")
+                        fo.write("          test_step_Result = True\n")
+                        fo.write("          test_step_Comment ='Test Successful.'\n")
                         fo.write("    else: \n" )
-                        fo.write("          result = False\n")
-                        fo.write("          comment ='Test Failed!!'\n")
-                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
-                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
-                        fo.write(r"          response_str =  response_str + '\n'")
+                        fo.write("          test_step_Result = False\n")
+                        fo.write("          test_step_Comment ='Test Failed!!'\n")
                         fo.write("\n")
-                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile
+                        fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
+                        fo.write("\n")
+                        fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
+
 
                   elif Diag_Service[0:2]=='27': # Check for diagnostic service ID is "Security Access ID"
 
@@ -886,39 +672,37 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ##          Security Access  #\n")
                         fo.write("    ################################\n")
 
-                        TD = test_step_desc.replace('\n',' ')
+                        TD = test_step_Desc.replace('\n',' ')
                         TD = TD.replace('\'','\"')
 
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
-                        fo.write("    test_Result = False\n" )
-                        fo.write(r"    comment = '\n'" )
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    test_step_Result = False\n" )
+                        fo.write(r"    test_step_Comment = '\n'" )
                         fo.write("\n")
-                        fo.write(r"    response_str = '\n'" )
+                        fo.write(r"    test_step_ResponseStr = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
 
                         if ("Send" in TD) and ("Wrong" in TD) and ("Key" in TD):
-                            fo.write("    can%s.dgn.security_access_wrong_key(%s)\n" % (int(1),'0x'+PID))
+                            fo.write("    canObj.dgn.security_access_wrong_key(%s)\n" % ('0x'+PID))
                         else:
-                            fo.write("    can%s.dgn.security_access(%s)\n" % (int(1),'0x'+PID))
+                            fo.write("    canObj.dgn.security_access(%s)\n" % ('0x'+PID))
 
                         fo.write("\n")
                         fo.write("    Expec_res = '%s'\n"%Expec_res)
                         fo.write("    Actual_res = GetActualResponseFrames()\n")
                         fo.write("\n")
                         fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                        fo.write("          result = True\n")
-                        fo.write("          comment ='Test Successful.'\n")
+                        fo.write("          test_step_Result = True\n")
+                        fo.write("          test_step_Comment ='Test Successful.'\n")
                         fo.write("    else: \n" )
-                        fo.write("          result = False\n")
-                        fo.write("          comment ='Test Failed!!'\n")
-                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
-                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
-                        fo.write(r"          response_str =  response_str + '\n'")
+                        fo.write("          test_step_Result = False\n")
+                        fo.write("          test_step_Comment ='Test Failed!!'\n")
                         fo.write("\n")
-                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile
+                        fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
+                        fo.write("\n")
+                        fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
+
 
 
                   elif Diag_Service[0:2]=='19': # Check for diagnostic service ID is "READ DTC Information"
@@ -935,45 +719,43 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ##    READ DTC Information    ##\n")
                         fo.write("    ################################\n")
 
-                        TD = test_step_desc.replace('\n',' ')
+                        TD = test_step_Desc.replace('\n',' ')
                         TD = TD.replace('\'','\"')
 
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
-                        fo.write("    test_Result = False\n" )
-                        fo.write(r"    comment = '\n'" )
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    test_step_Result = False\n" )
+                        fo.write(r"    test_step_Comment = '\n'" )
                         fo.write("\n")
-                        fo.write(r"    response_str = '\n'" )
+                        fo.write(r"    test_step_ResponseStr = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
-                        
+
                         if(PID == ''):
-                            fo.write("    can%s.dgn.iso.net.send_request([0x19, ], 'PHYSICAL')\n" % (int(1)))
+                            fo.write("    canObj.dgn.iso.net.send_request([0x19, ], 'PHYSICAL')\n")
                         else:
-                            fo.write("    can%s.dgn.iso.net.send_request([0x19" % (int(1)))
-                            
+                            fo.write("    canObj.dgn.iso.net.send_request([0x19")
+
                             for i in range(2,len(Diag_Service),2):
                                 fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
 
                             fo.write("], 'PHYSICAL') \n")
-                        
+
                         fo.write("    time.sleep(1)\n" )
                         fo.write("\n")
                         fo.write("    Expec_res = '%s'\n"%Expec_res)
                         fo.write("    Actual_res = GetActualResponseFrames()\n")
                         fo.write("\n")
                         fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                        fo.write("          result = True\n")
-                        fo.write("          comment ='Read DTC Successful.'\n")
+                        fo.write("          test_step_Result = True\n")
+                        fo.write("          test_step_Comment ='Read DTC Successful.'\n")
                         fo.write("    else: \n" )
-                        fo.write("          result = False\n")
-                        fo.write("          comment ='Read DTC Failed!!'\n")
-                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
-                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
-                        fo.write(r"          response_str =  response_str + '\n'")
+                        fo.write("          test_step_Result = False\n")
+                        fo.write("          test_step_Comment ='Read DTC Failed!!'\n")
                         fo.write("\n")
-                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile
+                        fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
+                        fo.write("\n")
+                        fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
+
 
 
                   elif Diag_Service[0:2]=='2E': # Check for diagnostic service ID is "write DID"
@@ -991,7 +773,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                   elif Diag_Service[0:2]=='85': # Check for diagnostic service ID is "Control DTC Setting"
 
                         PID = Diag_Service[2:4] #Extract Subfunction
-                        
+
                         print_row = int(curr_row)+1
 
                         fo.write("\n    #######################################")  #Print row number of excel sheet
@@ -1002,31 +784,30 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ##       Control DTC Setting      ##\n")
                         fo.write("    ###################################\n")
 
-                        TD = test_step_desc.replace('\n',' ')
+                        TD = test_step_Desc.replace('\n',' ')
                         TD = TD.replace('\'','\"')
 
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
-                        fo.write("    test_Result = False\n" )
-                        fo.write(r"    comment = '\n'" )
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    test_step_Result = False\n" )
+                        fo.write(r"    test_step_Comment = '\n'" )
                         fo.write("\n")
-                        fo.write(r"    response_str = '\n'" )
+                        fo.write(r"    test_step_ResponseStr = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
 
                         if(len(Diag_Service) <= 4):
                             if(PID == ''):
-                                fo.write("    can%s.dgn.iso.net.send_request([0x85, ], 'PHYSICAL')\n" % (int(1)))  
+                                fo.write("    canObj.dgn.iso.net.send_request([0x85, ], 'PHYSICAL')\n")
                             else:
-                                fo.write("    can%s.dgn.control_dtc_setting_custom(%s)\n" % (int(1),'0x'+PID))
+                                fo.write("    canObj.dgn.control_dtc_setting_custom(%s)\n" % ('0x'+PID))
                         else:
-                            fo.write("    can%s.dgn.iso.net.send_request([0x85" % (int(1)))
-                            
+                            fo.write("    canObj.dgn.iso.net.send_request([0x85")
+
                             for i in range(2,len(Diag_Service),2):
                                 fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
 
                             fo.write("], 'PHYSICAL') \n")
-                            
+
 
                         fo.write("    time.sleep(1)\n" )
                         fo.write("\n")
@@ -1034,22 +815,20 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    Actual_res = GetActualResponseFrames()\n")
                         fo.write("\n")
                         fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                        fo.write("          result = True\n")
-                        fo.write("          comment ='Test Successful.'\n")
+                        fo.write("          test_step_Result = True\n")
+                        fo.write("          test_step_Comment ='Test Successful.'\n")
                         fo.write("    else: \n" )
-                        fo.write("          result = False\n")
-                        fo.write("          comment ='Test Failed.'\n")
-                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
-                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
-                        fo.write(r"          response_str =  response_str + '\n'")
+                        fo.write("          test_step_Result = False\n")
+                        fo.write("          test_step_Comment ='Test Failed.'\n")
                         fo.write("\n")
-                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile  
+                        fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
+                        fo.write("\n")
+                        fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
 
                   elif Diag_Service[0:2]=='14': # Check for diagnostic service ID is "Clear Diagnosice Information"
 
                         PID = Diag_Service[2:4] #Extract Subfunction
-                      
+
                         print_row = int(curr_row)+1
 
                         fo.write("\n    #######################################")  #Print row number of excel sheet
@@ -1060,28 +839,27 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ## Clear Diagnostics Information  ##\n")
                         fo.write("    ###################################\n")
 
-                        TD = test_step_desc.replace('\n',' ')
+                        TD = test_step_Desc.replace('\n',' ')
                         TD = TD.replace('\'','\"')
 
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
-                        fo.write("    test_Result = False\n" )
-                        fo.write(r"    comment = '\n'" )
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    test_step_Result = False\n" )
+                        fo.write(r"    test_step_Comment = '\n'" )
                         fo.write("\n")
-                        fo.write(r"    response_str = '\n'" )
+                        fo.write(r"    test_step_ResponseStr = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
 
                         if(PID == ''):
-                            fo.write("    can%s.dgn.iso.net.send_request([0x14, ], 'PHYSICAL')\n" % (int(1)))
+                            fo.write("    canObj.dgn.iso.net.send_request([0x14, ], 'PHYSICAL')\n")
                         else:
-                            fo.write("    can%s.dgn.iso.net.send_request([0x14" % (int(1)))
-                            
+                            fo.write("    canObj.dgn.iso.net.send_request([0x14")
+
                             for i in range(2,len(Diag_Service),2):
                                 fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
 
                             fo.write("], 'PHYSICAL') \n")
-                            
+
 
                         fo.write("    time.sleep(1)\n" )
                         fo.write("\n")
@@ -1089,17 +867,16 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    Actual_res = GetActualResponseFrames()\n")
                         fo.write("\n")
                         fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                        fo.write("          result = True\n")
-                        fo.write("          comment ='Test Successful.'\n")
+                        fo.write("          test_step_Result = True\n")
+                        fo.write("          test_step_Comment ='Test Successful.'\n")
                         fo.write("    else: \n" )
-                        fo.write("          result = False\n")
-                        fo.write("          comment ='Test Failed.'\n")
-                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
-                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
-                        fo.write(r"          response_str =  response_str + '\n'")
+                        fo.write("          test_step_Result = False\n")
+                        fo.write("          test_step_Comment ='Test Failed.'\n")
                         fo.write("\n")
-                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile                        
+                        fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
+                        fo.write("\n")
+                        fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
+
 
                   elif Diag_Service[0:2]=='3E': # Check for diagnostic service ID is "Tester Present"
 
@@ -1115,31 +892,30 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    ##         Tester Present         ##\n")
                         fo.write("    ###################################\n")
 
-                        TD = test_step_desc.replace('\n',' ')
+                        TD = test_step_Desc.replace('\n',' ')
                         TD = TD.replace('\'','\"')
 
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can1.dgn.iso.net._all_frames = []\n" )
-                        fo.write("    test_Result = False\n" )
-                        fo.write(r"    comment = '\n'" )
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    test_step_Result = False\n" )
+                        fo.write(r"    test_step_Comment = '\n'" )
                         fo.write("\n")
-                        fo.write(r"    response_str = '\n'" )
+                        fo.write(r"    test_step_ResponseStr = '\n'" )
                         fo.write("\n")
                         fo.write("\n")
 
 
                         if(len(Diag_Service) <= 4):
                             if(PID == '00'):
-                                fo.write("    can%s.dgn.tester_present()\n" % (int(1)))    
+                                fo.write("    canObj.dgn.tester_present()\n")
                             elif(PID == '80'):
-                                fo.write("    can%s.dgn.tester_present_spr()\n" % (int(1)))
+                                fo.write("    canObj.dgn.tester_present_spr()\n")
                             elif(PID == ''):
-                                fo.write("    can%s.dgn.iso.net.send_request([0x3E, ], 'PHYSICAL')\n" % (int(1)))  
+                                fo.write("    canObj.dgn.iso.net.send_request([0x3E, ], 'PHYSICAL')\n")
                             else:
-                                fo.write("    can%s.dgn.tester_present_custom(%s)\n" % (int(1),'0x'+PID))
+                                fo.write("    canObj.dgn.tester_present_custom(%s)\n" % ('0x'+PID))
                         else:
-                            fo.write("    can%s.dgn.iso.net.send_request([0x3E" % (int(1)))
-                            
+                            fo.write("    canObj.dgn.iso.net.send_request([0x3E")
+
                             for i in range(2,len(Diag_Service),2):
                                 fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
 
@@ -1152,18 +928,15 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("    Actual_res = GetActualResponseFrames()\n")
                         fo.write("\n")
                         fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                        fo.write("          result = True\n")
-                        fo.write("          comment ='Test Successful.'\n")
+                        fo.write("          test_step_Result = True\n")
+                        fo.write("          test_step_Comment ='Test Successful.'\n")
                         fo.write("    else: \n" )
-                        fo.write("          result = False\n")
-                        fo.write("          comment ='Test Failed.'\n")
-                        fo.write("    for j in range(len(can1.dgn.iso.net._all_frames)): \n" )
-                        fo.write("          response_str =  response_str + can1.dgn.iso.net._format_frame(can1.dgn.iso.net._all_frames[j])\n")
-                        fo.write(r"          response_str =  response_str + '\n'")
+                        fo.write("          test_step_Result = False\n")
+                        fo.write("          test_step_Comment ='Test Failed.'\n")
                         fo.write("\n")
-                        fo.write(r"    report.add_test_step(test_step_desc,result,'CAN Frame :'+ response_str,'%s',comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-                        fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile
-
+                        fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
+                        fo.write("\n")
+                        fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
 
 #----------------------------------------------------------Invoke Pop-up Message----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1173,13 +946,13 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                     fo.write("\n    #######################################")  #Print row number of excel sheet
                     fo.write("\n    #Code block generated for row no = %s  #"%print_row)
                     fo.write("\n    ##################################### #\n")
-                    
-                    test_step_desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
 
-                    TD = test_step_desc.replace('\n',' ')
+                    test_step_Desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
+
+                    TD = test_step_Desc.replace('\n',' ')
                     TD = TD.replace('\'','\"')
-                    
-                    if(test_step_desc == ''): # Check For Proper Data Entry in Excel sheet
+
+                    if(test_step_Desc == ''): # Check For Proper Data Entry in Excel sheet
                         print("\n**Error occured.")
                         print("\nTest Description is not provided.")
                         print("\nCheck Row no:")+str(curr_row+1)+"\n"
@@ -1189,26 +962,26 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         fo.write("\n    ###################################\n")  #Tester Present
                         fo.write("    ##         Tester Present         ##\n")
                         fo.write("    ###################################\n")
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can%s.dgn.stop_periodic_tp()\n" % (int(1)))
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    canObj.dgn.stop_periodic_tp()\n")
                     elif('Make Tester Present ON' in TD):
                         fo.write("\n    ###################################\n")  #Tester Present
                         fo.write("    ##         Tester Present         ##\n")
                         fo.write("    ###################################\n")
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    can%s.dgn.start_periodic_tp()\n" % (int(1)))
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    canObj.dgn.start_periodic_tp()\n")
                     else:
                         fo.write("\n    ################################\n")  #Session Ctrl By Diagnostics
                         fo.write("    ##          Message Pop-up  #\n")
                         fo.write("    ################################\n")
-                        
-                        fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                        fo.write("    InvokeMessageBox(test_step_desc)\n" )
+
+                        fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                        fo.write("    InvokeMessageBox(test_step_Desc)\n" )
 
 
 
 
-                    fo.write(r"    report.add_test_step(test_step_desc,True,'','')") #Report
+                    fo.write(r"    report.add_test_step(test_step_Desc,True,'','')") #Report
                     fo.write("\n")
                     fo.write("\n")
 
@@ -1248,11 +1021,11 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
 
                   TD = description.replace('\n',' ') #Remove if new line is added in test description
                   TD = TD.replace('\'','\"')
-                  fo.write("\n    test_step_desc='%s'\n" %TD)
-                  fo.write("    print test_step_desc\n")
+                  fo.write("    test_step_Desc='%s'\n" %TD)
+                  fo.write("    print test_step_Desc\n")
                   fo.write("    time.sleep(%s)"%time)
                   fo.write("\n")
-                  fo.write(r"    report.add_test_step(test_step_desc,True,'','')") #Report
+                  fo.write(r"    report.add_test_step(test_step_Desc,True,'','')") #Report
                   fo.write("\n")
                   fo.write("\n")
 
@@ -1264,7 +1037,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
               if xl_sheet.cell(curr_row,Type).value == 'CAN_SIGNAL':
 
                   #Extract values from excel sheet
-                  test_step_desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
+                  test_step_Desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
                   comments = xl_sheet.cell(curr_row,Comments).value #Comments
 
 
@@ -1292,32 +1065,32 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                       Can_Signal_Value_List.append(byteHex_str)
 
                   Expec_res = str(Can_Signal_Value_Str.upper())
-				  				  
+
                   if Expec_res[0] == '0' and Expec_res[1] != '0' and len(Can_Signal_Value_Str)>1:
                       Expec_res = Expec_res[1:]
                   elif Expec_res == '00' or Expec_res == '000' or Expec_res == '0000':
                       Expec_res = '0'
-				  
-					  
+
+
                   if Can_Message != '' and Can_Signal != '' and Can_Signal_Value_Str != '':
                       fo.write("\n    ################################\n")
                       fo.write("    ##          Send CAN signal  #\n")
                       fo.write("    ################################\n")
 
-                      TD = test_step_desc.replace('\n',' ')
+                      TD = test_step_Desc.replace('\n',' ')
                       TD = TD.replace('\'','\"')
 
-                      fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                      fo.write("    test_Result = False\n" )
-                      fo.write(r"    comment = '\n'" )
+                      fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                      fo.write("    test_step_Result = False\n" )
+                      fo.write(r"    test_step_Comment = '\n'" )
                       fo.write("\n")
-                      fo.write(r"    response_str = '\n'" )
+                      fo.write(r"    test_step_ResponseStr = '\n'" )
                       fo.write("\n")
                       fo.write("\n")
-                      fo.write("    can%s.send_cyclic_frame('%s',10) \n" %(int(1),Can_Message))
-                      #fo.write("    can%s.set_signal('%s',%s) \n" %(int(1),Can_Signal,Can_Signal_Value))
+                      fo.write("    canObj.send_cyclic_frame('%s',10) \n" %(Can_Message))
+                      #fo.write("    canObj.set_signal('%s',%s) \n" %(int(1),Can_Signal,Can_Signal_Value))
 
-                      fo.write("    can%s.set_signal('%s',[" %(int(1),Can_Signal))
+                      fo.write("    canObj.set_signal('%s',[" %(Can_Signal))
                       for i in range(len(Can_Signal_Value_List)):
                           if i == (len(Can_Signal_Value_List)-1):
                               fo.write("%s" %Can_Signal_Value_List[i])
@@ -1329,7 +1102,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
 
                       fo.write("\n")
                       fo.write("    Expec_res = '%s'\n"%Expec_res)
-                      fo.write("    Actual_res = can%s.get_signal('%s','%s')\n"%(int(1),Can_Signal,Can_Message))
+                      fo.write("    Actual_res = canObj.get_signal('%s','%s')\n"%(Can_Signal,Can_Message))
                       fo.write("    Actual_res = str(hex(Actual_res))\n")
                       fo.write("    Actual_res = Actual_res.replace('0x','')\n")
                       fo.write("    Actual_res = Actual_res.replace('L','')\n")
@@ -1338,22 +1111,20 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                       fo.write("\n")
 
                       fo.write("    if Expec_res == Actual_res: \n" )
-                      fo.write("          result = True\n")
-                      fo.write("          comment ='CAN signal set Successfully.'\n")
+                      fo.write("          test_step_Result = True\n")
+                      fo.write("          test_step_Comment ='CAN signal set Successfully.'\n")
                       fo.write("    else: \n" )
-                      fo.write("          result = False\n")
-                      fo.write("          comment ='CAN signal could not be set.'\n")
-                      fo.write("    response_str = str(can%s.get_frame(can%s.dbc.find_frame_id('%s')))\n"%(int(1),int(1),Can_Message))
-                      fo.write(r"    report.add_test_step(test_step_desc,result,'%s.%s='+Actual_res,'%s',comment + '\n' + '%s')"%(Can_Message,Can_Signal,Test_Condition,Comments_string)) #Report
-                      #fo.write(r"    report.add_test_step(test_step_desc,result,'%s' + comment + '\n' + '%s')"%(Test_Condition,Comments_string)) #Report
-                      fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile
+                      fo.write("          test_step_Result = False\n")
+                      fo.write("          test_step_Comment ='CAN signal could not be set.'\n")
+                      fo.write("    test_step_ResponseStr = str(canObj.get_frame(canObj.dbc.find_frame_id('%s')))\n"%(Can_Message))
+                      fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result,'%s.%s='+Actual_res,'%s',test_step_Comment + '\n' + '%s')"%(Can_Message,Can_Signal,Test_Condition,Comments_string)) #Report
                   else:
                       print "Test Condition entered is incorrect !!"
 
               elif xl_sheet.cell(curr_row,Type).value == 'CAN_FRAME':
 
                   #Extract values from excel sheet
-                  test_step_desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
+                  test_step_Desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
                   comments = xl_sheet.cell(curr_row,Comments).value #Comments
                   Expec_res=str(xl_sheet.cell(curr_row,Test_CondValue).value) #Expected value of Test Step
 
@@ -1390,17 +1161,17 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                       fo.write("    ##          Send CAN Frame  #\n")
                       fo.write("    ################################\n")
 
-                      TD = test_step_desc.replace('\n',' ')
+                      TD = test_step_Desc.replace('\n',' ')
                       TD = TD.replace('\'','\"')
 
-                      fo.write("\n    test_step_desc='%s'\n" %TD)  #Test step Description
-                      fo.write("    test_Result = False\n" )
-                      fo.write(r"    comment = '\n'" )
+                      fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+                      fo.write("    test_step_Result = False\n" )
+                      fo.write(r"    test_step_Comment = '\n'" )
                       fo.write("\n")
-                      fo.write(r"    response_str = '\n'" )
+                      fo.write(r"    test_step_ResponseStr = '\n'" )
                       fo.write("\n")
                       fo.write("\n")
-                      fo.write("    can%s.write_frame(%s, %s, [" %(int(1),Can_FrameID,len(Can_Frame_Value_List)))
+                      fo.write("    canObj.write_frame(%s, %s, [" %(Can_FrameID,len(Can_Frame_Value_List)))
                       for i in range(len(Can_Frame_Value_List)):
                           if i == (len(Can_Frame_Value_List)-1):
                               fo.write("%s" %Can_Frame_Value_List[i])
@@ -1410,8 +1181,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                       fo.write("]) \n")
 
                       fo.write("    time.sleep(0.5)\n" )
-                      fo.write(r"    report.add_test_step(test_step_desc,result,'%s' + comment + '\n' + '%s')"%(Test_Condition,Comments_string)) #Report
-                      fo.write("\n    Log_AllFrames.append(response_str)\n\n") #Logfile
+                      fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result,'%s' + comment + '\n' + '%s')"%(Test_Condition,Comments_string)) #Report
                   else:
                       print "Test Condition entered is incorrect !!"
 
@@ -1429,14 +1199,17 @@ curr_row-=1
 
 
 fo.write("\n\ndef endTest():")
-fo.write("\n    report.generate_report(REPORT_API_PATH)")
-fo.write("\n    sys.exit()\n\n\n\n")
+fo.write("\n    report.generate_report()")
+fo.write("\n    canObj.dgn.save_logfile()")
+fo.write("\n    canObj.dgn.stop_periodic_tp()")
+fo.write("\n    canObj.stop_cyclic_frame('BCCM_NM51F')")
+fo.write("\n")
+fo.write(r"    print '\nScript Execution Finished !!'")
+fo.write("\n")
+fo.write("\n    com.exit()\n\n\n\n")
 
 
-#---------------------------------------------------------------Execution of Test Cases--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-
-
-# Execute the test cases
+#--------------------------------Execution of Test Cases--------------------------------------------------#
 fo.write("\n#############################")
 fo.write("\n## Execute the test cases  ##")
 fo.write("\n#############################"+ '\n' + '\n')
@@ -1446,23 +1219,15 @@ print "Total Number of Test Cases: "+ str(Test_Case_Cnt)
 print "Testcase script " + testcaseScriptFile + ".py" + " generated !!"
 print "\n\n\n"
 
-#### Start Calling all Test Cases #####
-
+#------------------------------------- Start Calling all Test Cases --------------------------------------#
 Cnt=1
 while Cnt<=Test_Case_Cnt:
-  fo.write("test_%s()\n" %Cnt)
-  Cnt+=1
-  fo.write("time.sleep(1)\n")
-
-
-#--------------------------------------------------------------------Save Log Files------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-
-fo.write("\n# Save CAN Log Files")
-fo.write("\ncan1.dgn.save_logfile_custom(Log_AllFrames,can_log_file)")
+    fo.write("test_%s()\n" %Cnt)
+    Cnt+=1
+    fo.write("time.sleep(1)\n")
 
 #--------------------------------------------------------------------Generate the final report------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-
-fo.write("\n# Generate the final report")
+fo.write("\n# Perform End actions i.e Save log files, Generate Report etc..")
 fo.write("\nendTest()")
 
 fo.close()

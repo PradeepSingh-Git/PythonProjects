@@ -1,1 +1,0 @@
-c:\Python27\python.exe SITS-SW-280-307-TESTS_Final_Service_22.py

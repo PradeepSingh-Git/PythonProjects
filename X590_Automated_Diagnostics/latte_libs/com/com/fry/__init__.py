@@ -1,0 +1,1 @@
+from .fry import FLEXRAY
