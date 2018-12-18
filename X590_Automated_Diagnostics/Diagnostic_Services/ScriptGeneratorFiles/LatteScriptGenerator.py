@@ -274,7 +274,6 @@ writeInvokeMsgBoxDef()    #function call
 
 '''Open IntegrationTest sheet'''
 xl_sheet = book.sheet_by_name(testcaseFileSheet)  # IntegrationTest sheet open
-cell_typ = xl_sheet.cell(curr_row, col_TestType).value
 
 #-----------------------------------------Test Header function-----------------------------------------------------------------------------------------------------------------------
 '''
