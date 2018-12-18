@@ -222,7 +222,31 @@ def writeInvokeMsgBoxDef():
     fo.write("""    tkMessageBox.showinfo("Manual Input Required", MessageStr)\n""")
     fo.write("    root.destroy()\n")
 
-#-------------------------------------------excel columns function-----------------------------------------
+#-----------------------------------------Python TestCase function Definition-----------------------------------------------------------------------------------------------------------------------
+def writeTestCaseDef(ETest_Case_Cnt,Etest_name,Etest_case_desc,Etest_case_reqs):
+        '''
+        Description:This function starts to write new test case in .py file
+        it writes test description ,test case requirment id to py file.
+        '''
+
+        fo.write("\n#######################")
+        fo.write("\n## Test Case %s       ##" %ETest_Case_Cnt)
+        fo.write("\n#######################"+ '\n' + '\n')
+        fo.write('def test_%s():\n' %(str(ETest_Case_Cnt)))
+
+        TD = Etest_name.replace('\'','\"')  #in Test Name Statement replace ' with " for indentation
+        TD = TD.replace('\n',' ')   #in Test Name Statement replace \n with ' ' for indentation
+        TN = Etest_case_desc.replace('\n',' ')  #in Test Description Statement replace \n with ' ' for indentation
+        TN = TN.replace('\'','\"')  #in Test Description Statement replace ' with " for indentation
+
+        fo.write("    test_case_name = 'Test Case %s: %s'\n" % (ETest_Case_Cnt,TD))#Write Test Name
+        fo.write("    test_case_desc = '%s'\n" %TN) #Write Test Description
+        fo.write("    test_case_reqs = '%s'\n" % Etest_case_reqs.replace('\n',' ') ) #Write Test Requirment ID
+        fo.write("    print test_case_name\n\n")
+        fo.write("    report.add_test_case(test_case_name, test_case_desc, test_case_reqs)\n\n")
+
+
+#-------------------------------------------Initialization of Variables-----------------------------------------
 def initVariables():
     '''
     Description: This function assigns names to excel sheet columns.
@@ -255,10 +279,13 @@ def initVariables():
     curr_row = 1
 
 
-
+'############################### FUNCTION CALLS ############################################'
 initVariables()           #Function Call
 openWorkbook()            #Function call
+
+'''Open tla library sheet'''
 xl_sheet = book.sheet_by_name('tla_library')  #Open sheet
+
 readTLALibrarySheet()     #Function call
 createBatchFile()         #Function call
 openPythonFile()          #Function call
@@ -269,44 +296,15 @@ writeChannelSettings()    #function call
 writePreconditions()      #function call
 writeGetActualRespDef()   #function call
 writeInvokeMsgBoxDef()    #function call
-
+'#########################################################################################'
 
 
 '''Open IntegrationTest sheet'''
 xl_sheet = book.sheet_by_name(testcaseFileSheet)  # IntegrationTest sheet open
 
-#-----------------------------------------Test Header function-----------------------------------------------------------------------------------------------------------------------
-'''
-Test Case Definition
-'''
-def Test_Header(ETest_Case_Cnt,Etest_name,Etest_case_desc,Etest_case_reqs):
-        '''
-        Description:This function starts to write new test case in .py file
-        it writes test description ,test case requirment id to py file.
-        '''
-
-        fo.write("\n#######################")
-        fo.write("\n## Test Case %s       ##" %ETest_Case_Cnt)
-        fo.write("\n#######################"+ '\n' + '\n')
-        fo.write('def test_%s():\n' %(str(ETest_Case_Cnt)))
-
-        TD = Etest_name.replace('\'','\"')  #in Test Name Statement replace ' with " for indentation
-        TD = TD.replace('\n',' ')   #in Test Name Statement replace \n with ' ' for indentation
-        TN = Etest_case_desc.replace('\n',' ')  #in Test Description Statement replace \n with ' ' for indentation
-        TN = TN.replace('\'','\"')  #in Test Description Statement replace ' with " for indentation
-
-        fo.write("    test_case_name = 'Test Case %s: %s'\n" % (ETest_Case_Cnt,TD))#Write Test Name
-        fo.write("    test_case_desc = '%s'\n" %TN) #Write Test Description
-        fo.write("    test_case_reqs = '%s'\n" % Etest_case_reqs.replace('\n',' ') ) #Write Test Requirment ID
-        fo.write("    print test_case_name\n\n")
-        fo.write("    report.add_test_case(test_case_name, test_case_desc, test_case_reqs)\n\n")
-
-
-
 #------------------------------------Parsing of excel sheet row start-------------------------------------------------------------------------------------------------------------------------------------
 while (str(xl_sheet.cell(curr_row,col_ReqId).value)!='END Line. Do Not Remove'): #Loop starts to access the test case/steps untill the END of  Line
 
-#--------------------------------------Template Validity Check---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if(xl_sheet.cell(curr_row,col_ReqId).value != ''):   # Check For Proper Data Entry in Excel sheet
         if(xl_sheet.cell(curr_row,col_TestType).value != 'TH'):
             raw_input("\n**Error occured,to check error press Enter\n")
@@ -336,7 +334,7 @@ while (str(xl_sheet.cell(curr_row,col_ReqId).value)!='END Line. Do Not Remove'):
         test_case_desc = xl_sheet.cell(curr_row,col_TestDesc).value   #Test Description
         test_case_reqs = xl_sheet.cell(curr_row,col_ReqId).value      #Test Case Req Ids
 
-        Test_Header(Test_Case_Cnt,test_name,test_case_desc,test_case_reqs) #function call
+        writeTestCaseDef(Test_Case_Cnt,test_name,test_case_desc,test_case_reqs) #function call
         #print("\nTest Step count: ") +str(Test_Step_Cnt)
 
 
