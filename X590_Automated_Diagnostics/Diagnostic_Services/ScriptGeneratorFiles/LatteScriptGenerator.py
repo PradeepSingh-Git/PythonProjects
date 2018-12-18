@@ -47,7 +47,7 @@ py_compile.compile("LatteScriptGenerator.py")
 
 
 
-def Excel_Path():
+def openWorkbook():
     '''
     Description: This function open Excel sheet in which all test cases are written.
     user shoud store excel sheet in current working directory.
@@ -59,58 +59,65 @@ def Excel_Path():
     book_path = testcaseDirectory + "\\" + testcaseFile #path of excelsheet
     book = xlrd.open_workbook(book_path)  #open excelsheet"Test_Details"
 
-    xl_sheet = book.sheet_by_name('tla_library')  #Open sheet
 
-Excel_Path() #Function call
-
-
-def file_creation():
-  '''
-  Description:This function will create new Python file i.e .py file.
-  '''
-
-  global fo
-  global batchfo
-
-  '****************************************************************************'
-  'file_creation function code updated to create the IT Test file. '
-  '****************************************************************************'
-
-  if testcaseScriptFile != "":
-      pytitle = testcaseDirectory + "\\"  + testcaseScriptFile +'.py'
-      batchtitle = testcaseDirectory + "\\"  + testcaseScriptFile +'.bat'
-
-  else:
-    raw_input('\nUser has not entered valid choice')
-    sys.exit()
-
-  fo = open(pytitle,'w') #open file in write mode
-  batchfo = open(batchtitle,'w')#open file in write mode
-
-file_creation() #Function call
-
-
-def write_batchfile():
+#----------------------------Create Python File for each WorkSheet-----------------------------------#
+def openPythonFile():
     '''
-    Description: This Function writes to batch file that executes corresponding .py file
+    Description:This function will create new Python file i.e .py file for each testSheet
     '''
-batchfo.write("c:\Python27\python.exe %s" %(testcaseScriptFile +'.py'))
-batchfo.close()
+    global fo
 
-write_batchfile() #Function call
+    if testcaseScriptFile != "":
+        pytitle = testcaseDirectory + "\\"  + testcaseScriptFile +'.py'
+    else:
+        raw_input('\nUser has not entered valid choice')
+        sys.exit()
 
-'''
-Description:Extracting valus from sheet tla_library e.g TLA,Component_VERSION,SW_BRANCH etc.
-'''
-TLA = xl_sheet.cell(2,2).value
-Component_VERSION = xl_sheet.cell(4,2).value
-TLA_VERSION = xl_sheet.cell(6,2).value
-SW_BRANCH = xl_sheet.cell(8,2).value
-SVN_REVISION = xl_sheet.cell(10,2).value
-HW_VERSION = xl_sheet.cell(12,2).value
-AUTHOR =  xl_sheet.cell(14,2).value
-TLA_Description = xl_sheet.cell(16,2).value
-REPORT_NAME = TLA_Description + "_" + testcaseFileSheet
+    fo = open(pytitle,'w') #open file in write mode
+
+#----------------------------Create Batch File for each Python file----------------------------------#
+def createBatchFile():
+    '''
+    Description: This Function creates and writes to batch file that executes corresponding .py file
+    '''
+    global batchfo
+
+    if testcaseScriptFile != "":
+        batchtitle = testcaseDirectory + "\\"  + testcaseScriptFile +'.bat'
+    else:
+        raw_input('\nUser has not entered valid choice')
+        sys.exit()
+
+    batchfo = open(batchtitle,'w')#open file in write mode
+    batchfo.write("c:\Python27\python.exe %s" %(testcaseScriptFile +'.py'))
+    batchfo.close()
+
+
+
+#----------------------------Read tla_library sheet from Workbook---------------------------------#
+def readTLALibrarySheet():
+    '''
+    Description:Extracting values from sheet tla_library e.g TLA,Component_VERSION,SW_BRANCH etc.
+    '''
+    global TLA
+    global Component_VERSION
+    global TLA_VERSION
+    global SW_BRANCH
+    global SVN_REVISION
+    global HW_VERSION
+    global AUTHOR
+    global TLA_Description
+    global REPORT_NAME
+
+    TLA                 = xl_sheet.cell(2,2).value
+    Component_VERSION   = xl_sheet.cell(4,2).value
+    TLA_VERSION         = xl_sheet.cell(6,2).value
+    SW_BRANCH           = xl_sheet.cell(8,2).value
+    SVN_REVISION        = xl_sheet.cell(10,2).value
+    HW_VERSION          = xl_sheet.cell(12,2).value
+    AUTHOR              = xl_sheet.cell(14,2).value
+    TLA_Description     = xl_sheet.cell(16,2).value
+    REPORT_NAME         = TLA_Description + "_" + testcaseFileSheet
 
 
 #----------------------------Generate Copyright header-------------------------------------------#
@@ -215,8 +222,46 @@ def writeInvokeMsgBoxDef():
     fo.write("""    tkMessageBox.showinfo("Manual Input Required", MessageStr)\n""")
     fo.write("    root.destroy()\n")
 
+#-------------------------------------------excel columns function-----------------------------------------
+def initVariables():
+    '''
+    Description: This function assigns names to excel sheet columns.
+    '''
+    global col_ReqId
+    global col_TestType
+    global col_IOType
+    global col_Type
+    global col_TestName
+    global col_TestDesc
+    global col_TestCondn
+    global col_ExpecRes
+    global col_Comments
+    global Test_Case_Cnt
+    global Test_Step_Cnt
+    global curr_row
+
+    col_ReqId = 0
+    col_TestType = 1
+    col_IOType = 2
+    col_Type = 3
+    col_TestName = 4
+    col_TestDesc = 5
+    col_TestCondn = 6
+    col_ExpecRes = 7
+    col_Comments = 8
+
+    Test_Case_Cnt = 0
+    Test_Step_Cnt = 0
+    curr_row = 1
 
 
+
+initVariables()           #Function Call
+openWorkbook()            #Function call
+xl_sheet = book.sheet_by_name('tla_library')  #Open sheet
+readTLALibrarySheet()     #Function call
+createBatchFile()         #Function call
+openPythonFile()          #Function call
 writeCopyright()          #Function call
 writePathSettings()       #Function Call
 writeReportSettings()     #function call
@@ -227,76 +272,14 @@ writeInvokeMsgBoxDef()    #function call
 
 
 
+'''Open IntegrationTest sheet'''
+xl_sheet = book.sheet_by_name(testcaseFileSheet)  # IntegrationTest sheet open
+cell_typ = xl_sheet.cell(curr_row, col_TestType).value
+
+#-----------------------------------------Test Header function-----------------------------------------------------------------------------------------------------------------------
 '''
 Test Case Definition
 '''
-#-------------------------------------------excel columns function-----------------------------------------
-def Excel_columns():
-    '''
-    Description: This function assigns names to excel sheet columns.
-    '''
-    global Doors_Req
-    global Test_Type
-    global IO_Type
-    global Type
-    global dgn_session
-    global repeatibility
-    global Test_Name
-    global Test_Desc
-    global Test_CondName
-    global Test_CondValue
-    global Cyclic_time
-    global Resolution
-    global Print_Signals
-    global Comments
-    global Test_Case_Cnt
-    global Test_Step_Cnt
-    Doors_Req = 0
-    Test_Type = 1
-    IO_Type = 2
-    Type = 3
-    Test_Name = 4
-    Test_Desc = 5
-    Test_CondName = 6
-    Test_CondValue = 7
-    Comments = 8
-    dgn_session = 9
-    repeatibility = 10
-    Cyclic_time = 11
-    Resolution = 12
-    Print_Signals = 13
-
-
-    Test_Case_Cnt = 0
-    Test_Step_Cnt = 0
-Excel_columns() #Function Call
-
-
-'''Open IntegrationTest sheet'''
-
-xl_sheet = book.sheet_by_name(testcaseFileSheet)  # IntegrationTest sheet open
-numRows=xl_sheet.nrows
-'''
- Initialise Test_index to 1 to start the test case's
- Starts with the second Row (Next to the Defination Row )of Sheet
- cell_type used to check the validity of current test case or test step
-'''
-
-Test_index=1
-curr_row=1
-#cell_type = xl_sheet.cell_type(curr_row, Test_Type)
-'''
-Description: Find 'DOOR_ID' name row and start row scaning from that row
-'''
-DOORS_ID = 0
-while(str(xl_sheet.cell(DOORS_ID,0).value)!='Requirement ID'):
-  DOORS_ID+=1
-
-DOORS_ID = curr_row
-cell_typ = xl_sheet.cell(curr_row, Test_Type).value
-#print cell_typ
-#-----------------------------------------Test Header function-----------------------------------------------------------------------------------------------------------------------
-
 def Test_Header(ETest_Case_Cnt,Etest_name,Etest_case_desc,Etest_case_reqs):
         '''
         Description:This function starts to write new test case in .py file
@@ -322,81 +305,77 @@ def Test_Header(ETest_Case_Cnt,Etest_name,Etest_case_desc,Etest_case_reqs):
 
 
 #------------------------------------Parsing of excel sheet row start-------------------------------------------------------------------------------------------------------------------------------------
+while (str(xl_sheet.cell(curr_row,col_ReqId).value)!='END Line. Do Not Remove'): #Loop starts to access the test case/steps untill the END of  Line
 
-while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'): #Loop starts to access the test case/steps untill the END of  Line
-
-    cell_type = xl_sheet.cell_type(curr_row, Test_Type)
-
-    if(xl_sheet.cell(curr_row,Doors_Req).value != ''):   # Check For Proper Data Entry in Excel sheet
-        if(xl_sheet.cell(curr_row,Test_Type).value != 'TH'):
+#--------------------------------------Template Validity Check---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    if(xl_sheet.cell(curr_row,col_ReqId).value != ''):   # Check For Proper Data Entry in Excel sheet
+        if(xl_sheet.cell(curr_row,col_TestType).value != 'TH'):
             raw_input("\n**Error occured,to check error press Enter\n")
             print("\nwrong data entered column 1 \n")
             print "check row no: " +str(curr_row) + "\n"
-            print "check Column no:" +str(Test_Type) + "\n"
+            print "check Column no:" +str(col_TestType) + "\n"
             sys.exit()
 
-    if(xl_sheet.cell(curr_row,Test_Type).value != 'TH'):   # Check For Proper Data Entry in Excel sheet
-        if(xl_sheet.cell(curr_row,Test_Type).value == ''):
-            if(xl_sheet.cell(curr_row,IO_Type).value != ''):
+    if(xl_sheet.cell(curr_row,col_TestType).value != 'TH'):   # Check For Proper Data Entry in Excel sheet
+        if(xl_sheet.cell(curr_row,col_TestType).value == ''):
+            if(xl_sheet.cell(curr_row,col_IOType).value != ''):
                 raw_input("\n**Error occured,to check error press Enter\n")
                 print("\nSelect TH or TS \n")
                 print "check row no: " +str(curr_row) + "\n"
-                print "check Column no:" +str(IO_Type) + "\n"
+                print "check Column no:" +str(col_IOType) + "\n"
 
-    if xl_sheet.cell(curr_row,Test_Type).value == 'TH':  #New Test Case
+
+#--------------------------------------Start of TH---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    if xl_sheet.cell(curr_row,col_TestType).value == 'TH':  #New Test Case
 
         Test_Case_Cnt+=1 # Increment the Test Case Count
         Test_Step_Cnt=0  # Reinitialise the Test Step Count
 
         print("\n*************Writing test case ")+str(Test_Case_Cnt) +("*************")
 
-        test_name = xl_sheet.cell(curr_row,Test_Name).value   #Test Name
-        test_case_desc = xl_sheet.cell(curr_row,Test_Desc).value #test Description
-        test_case_reqs = xl_sheet.cell(curr_row,Doors_Req).value #Test Case Request
+        test_name      = xl_sheet.cell(curr_row,col_TestName).value   #Test Name
+        test_case_desc = xl_sheet.cell(curr_row,col_TestDesc).value   #Test Description
+        test_case_reqs = xl_sheet.cell(curr_row,col_ReqId).value      #Test Case Req Ids
 
         Test_Header(Test_Case_Cnt,test_name,test_case_desc,test_case_reqs) #function call
         #print("\nTest Step count: ") +str(Test_Step_Cnt)
 
 
-
-
 #--------------------------------------Start of TS---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    elif xl_sheet.cell(curr_row,Test_Type).value == 'TS': #New Test Step
-
+    elif xl_sheet.cell(curr_row,col_TestType).value == 'TS': #New Test Step
 
         Test_Step_Cnt+=1 #Increment Test Step Count
 
-        if xl_sheet.cell(curr_row,Comments).value != '':
-            Comments_string = 'Note: ' + str(xl_sheet.cell(curr_row,Comments).value)
+        if xl_sheet.cell(curr_row,col_Comments).value != '':
+            Comments_string = 'Note: ' + str(xl_sheet.cell(curr_row,col_Comments).value)
         else:
             Comments_string = ''
 
-        if(xl_sheet.cell(curr_row,Test_Name).value != ''):  # Check For Proper Data Entry in Excel sheet
+        if(xl_sheet.cell(curr_row,col_TestName).value != ''):  # Check For Proper Data Entry in Excel sheet
             raw_input("\n**Error occured,to check error press Enter\n")
             print("\nany data entery is not allwed in column no 4(Test Name)until new test case arrive\n")
             print "check row no: " +str(curr_row) + "\n"
-            print "check Column no:" +str(Test_Name) + "\n"
+            print "check Column no:" +str(col_TestName) + "\n"
             sys.exit()
-        if(xl_sheet.cell(curr_row,Doors_Req).value != ''): # Check For Proper Data Entry in Excel sheet
+        if(xl_sheet.cell(curr_row,col_ReqId).value != ''): # Check For Proper Data Entry in Excel sheet
             raw_input("\n**Error occured,to check error press Enter\n")
             print("\nany data entry is not allowed in column no 0(Requirement ID)until new test case arrive\n")
             print "check row no: " +str(curr_row) + "\n"
-            print "check Column no: " +str(Doors_Req) + "\n"
+            print "check Column no: " +str(col_ReqId) + "\n"
             sys.exit()
 
         # Check for Input activation
-        if xl_sheet.cell(curr_row,IO_Type).value == 'I' :  #Check for I/O
+        if xl_sheet.cell(curr_row,col_IOType).value == 'I' :  #Check for I/O
 
 
 #-------------------------------------- Start of Diagnostics--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-              if xl_sheet.cell(curr_row,Type).value == 'DIAG':
+              if xl_sheet.cell(curr_row,col_Type).value == 'DIAG':
 
                   #Extract values from excel sheet
-                  test_step_Desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
-                  comments = xl_sheet.cell(curr_row,Comments).value #Comments
-                  Expec_res_raw=str(xl_sheet.cell(curr_row,Test_CondValue).value) #Expected value of Test Step
+                  test_step_Desc = xl_sheet.cell(curr_row,col_TestDesc).value #Description
+                  comments = xl_sheet.cell(curr_row,col_Comments).value #Comments
+                  Expec_res_raw=str(xl_sheet.cell(curr_row,col_ExpecRes).value) #Expected value of Test Step
                   Expec_res_raw=Expec_res_raw.split('.')[0]
 
                   Expec_res = Expec_res_raw
@@ -404,7 +383,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                   Expec_res=Expec_res.replace(' ','')
                   Expec_res=Expec_res.upper()
 
-                  Diag_Service=str(xl_sheet.cell(curr_row,Test_CondName).value)
+                  Diag_Service=str(xl_sheet.cell(curr_row,col_TestCondn).value)
                   Diag_Service=Diag_Service.split('.')[0]
                   Diag_Service = Diag_Service.replace(" ", "")
 
@@ -940,14 +919,14 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
 
 #----------------------------------------------------------Invoke Pop-up Message----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-              elif xl_sheet.cell(curr_row,Type).value == 'MSG_POPUP': # Check for diagnostic service ID is "Session CTRL DID"
+              elif xl_sheet.cell(curr_row,col_Type).value == 'MSG_POPUP': # Check for diagnostic service ID is "Session CTRL DID"
 
                     print_row = int(str(curr_row))+1
                     fo.write("\n    #######################################")  #Print row number of excel sheet
                     fo.write("\n    #Code block generated for row no = %s  #"%print_row)
                     fo.write("\n    ##################################### #\n")
 
-                    test_step_Desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
+                    test_step_Desc = xl_sheet.cell(curr_row,col_TestDesc).value #Description
 
                     TD = test_step_Desc.replace('\n',' ')
                     TD = TD.replace('\'','\"')
@@ -956,7 +935,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                         print("\n**Error occured.")
                         print("\nTest Description is not provided.")
                         print("\nCheck Row no:")+str(curr_row+1)+"\n"
-                        print("\nCheck column number:")+str(Test_Desc)+"\n"
+                        print("\nCheck column number:")+str(col_TestDesc)+"\n"
                         sys.exit()
                     elif('Make Tester Present OFF' in TD):
                         fo.write("\n    ###################################\n")  #Tester Present
@@ -988,30 +967,29 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
 
 #----------------------------------------------------------Check for Wait----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-              elif xl_sheet.cell(curr_row,Type).value == 'DELAY_SEC':  #Test Step --> WAIT
-                  description = xl_sheet.cell(curr_row,Test_Desc).value #Description
-                  time = xl_sheet.cell(curr_row,Test_CondName).value #Time
-                  conditn_Val = xl_sheet.cell(curr_row,Test_CondValue).value #Cyclic Time
+              elif xl_sheet.cell(curr_row,col_Type).value == 'DELAY_SEC':  #Test Step --> WAIT
+                  description = xl_sheet.cell(curr_row,col_TestDesc).value #Description
+                  time = xl_sheet.cell(curr_row,col_TestCondn).value #Time
+                  conditn_Val = xl_sheet.cell(curr_row,col_ExpecRes).value #Cyclic Time
 
                   if(conditn_Val != ''): # Check For Proper Data Entry in Excel sheet
                        print("\n**Error occured.\n")
                        print("\nDont enter any value in this column: Evaluation Criteria (Expected Result)")
                        print "check row no: " +str(curr_row+1) + "\n"
-                       print "check Column no: " +str(Cyclic_time) + "\n"
                        sys.exit()
 
                   if(description == ''): # Check For Proper Data Entry in Excel sheet
                       print("\n**Error occured.\n")
                       print("\nTest Description is not provided.")
                       print("\nCheck Row no:")+str(curr_row+1)+"\n"
-                      print("\nCheck column number:")+str(Test_Desc)+"\n"
+                      print("\nCheck column number:")+str(col_TestDesc)+"\n"
                       sys.exit()
 
                   if(time == ''): #Time should not be blank
                       print("\n**Error occured.\n")
                       print ("Provide time(in sec) for delay\n")
                       print "check row no: " +str(curr_row+1)+"\n"
-                      print "check column no:" +str(Test_CondValue)+"\n"
+                      print "check column no:" +str(col_ExpecRes)+"\n"
                       sys.exit()
 
                   print_row = int(str(curr_row))+1
@@ -1032,16 +1010,16 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
               else:
                   print "none of TH or TS selected"
 
-        elif xl_sheet.cell(curr_row,IO_Type).value == 'O' : #Check I/O type
+        elif xl_sheet.cell(curr_row,col_IOType).value == 'O' : #Check I/O type
 
-              if xl_sheet.cell(curr_row,Type).value == 'CAN_SIGNAL':
+              if xl_sheet.cell(curr_row,col_Type).value == 'CAN_SIGNAL':
 
                   #Extract values from excel sheet
-                  test_step_Desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
-                  comments = xl_sheet.cell(curr_row,Comments).value #Comments
+                  test_step_Desc = xl_sheet.cell(curr_row,col_TestDesc).value #Description
+                  comments = xl_sheet.cell(curr_row,col_Comments).value #Comments
 
 
-                  Can_Signal_Details=str(xl_sheet.cell(curr_row,Test_CondName).value)
+                  Can_Signal_Details=str(xl_sheet.cell(curr_row,col_TestCondn).value)
                   #Can_Signal_Details=Can_Signal_Details.split('.')[0]
                   Can_Signal_Details=Can_Signal_Details.replace('\n',' ')
 
@@ -1121,19 +1099,19 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
                   else:
                       print "Test Condition entered is incorrect !!"
 
-              elif xl_sheet.cell(curr_row,Type).value == 'CAN_FRAME':
+              elif xl_sheet.cell(curr_row,col_Type).value == 'CAN_FRAME':
 
                   #Extract values from excel sheet
-                  test_step_Desc = xl_sheet.cell(curr_row,Test_Desc).value #Description
-                  comments = xl_sheet.cell(curr_row,Comments).value #Comments
-                  Expec_res=str(xl_sheet.cell(curr_row,Test_CondValue).value) #Expected value of Test Step
+                  test_step_Desc = xl_sheet.cell(curr_row,col_TestDesc).value #Description
+                  comments = xl_sheet.cell(curr_row,col_Comments).value #Comments
+                  Expec_res=str(xl_sheet.cell(curr_row,col_ExpecRes).value) #Expected value of Test Step
 
                   Expec_res=Expec_res.split('.')[0]
                   Expec_res=Expec_res.replace('\n',' ')
                   Expec_res=Expec_res.replace(' ','')
                   Expec_res=Expec_res.upper()
 
-                  Can_Frame_Details=str(xl_sheet.cell(curr_row,Test_CondName).value)
+                  Can_Frame_Details=str(xl_sheet.cell(curr_row,col_TestCondn).value)
                   Can_Frame_Details=Can_Frame_Details.replace('\n',' ')
 
                   Test_Condition = Can_Frame_Details
@@ -1190,7 +1168,7 @@ while (str(xl_sheet.cell(curr_row,Doors_Req).value)!='END Line. Do Not Remove'):
             raw_input("Error occured ,to check error press enter")
             print("I/O type is not selected for test step")
             print "check row no: " +str(curr_row+1)+"\n"
-            print "check column no:" +str(IO_Type)+"\n"
+            print "check column no:" +str(col_IOType)+"\n"
 
 
 
@@ -1200,6 +1178,7 @@ curr_row-=1
 
 fo.write("\n\ndef endTest():")
 fo.write("\n    report.generate_report()")
+fo.write("\n    canObj.dgn.iso.net.log_file = report.get_log_dir()")
 fo.write("\n    canObj.dgn.save_logfile()")
 fo.write("\n    canObj.dgn.stop_periodic_tp()")
 fo.write("\n    canObj.stop_cyclic_frame('BCCM_NM51F')")
