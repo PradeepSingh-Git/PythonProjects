@@ -42,7 +42,7 @@ if dgnflex_available:
         if DIAG_FRAMES_DEFINED_BY_NAME:
             # Define frame names existing in Fibex/AutosarEcuExtract for DGN
             FR_NAME_ID_TESTER_PHYS_REQ = 'TST_FR_Tx_DiagReq_1'
-            FR_NAME_ID_TESTER_FUNC_REQ = 'TST_FR_Tx_DiagReq_2'
+            FR_NAME_ID_TESTER_FUNC_REQ = 'TST_FR_Tx_DiagReq_1'
             FR_NAME_ID_ECU_RESP = ['EPICB_FR_DiagResp']
         else:
             # Define frame ID slots to be used for DGN (Note: MUST not be present in Fibex/AutosarEcuExtract)
