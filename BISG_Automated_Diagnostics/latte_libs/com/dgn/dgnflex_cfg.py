@@ -33,7 +33,7 @@ if dgnflex_available:
 
         # Addressing configuration for tester and ECU under test
         ID_N_SA = 0x0E80 # Tester
-        ID_N_TA_FUNCTIONAL = 0x1FFF # Tester functional address
+        ID_N_TA_FUNCTIONAL = 0xE400 # Tester functional address
         ID_N_TA_PHYSICAL = 0x1747 # EPICB
 
         # Configure here if FIBEX/AutosarEcuExtract DGN frames are used or manually defined. (Gigabox driver doesn't support manual definition)
