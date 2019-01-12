@@ -5,11 +5,11 @@ FlexRay library for working with frames/signals and diagnostics
 ====================================================================
 """
 import threading
-from ..data import FIBEX
-from ..data import ECUextract
-from ..dgn import dgnflex_available
+from data import FIBEX
+from data import ECUextract
+from dgn import dgnflex_available
 if dgnflex_available:
-    from ..dgn import DGN
+    from dgn import DGN
 from collections import deque
 import re
 import sys

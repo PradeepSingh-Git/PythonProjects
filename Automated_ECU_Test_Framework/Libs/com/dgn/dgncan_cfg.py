@@ -39,9 +39,9 @@ if dgncan_available:
             N_TA_FUNCTIONAL = 0xDF
         else:
             # If using Normal Addressing configure these CAN IDs
-            ID_PHYSICAL_REQ = 0x726
+            ID_PHYSICAL_REQ = 0x7E5
             ID_FUNCTIONAL_REQ = 0x7DF
-            ID_PHYSICAL_RESP = 0x72E
+            ID_PHYSICAL_RESP = 0x7ED
 
         # Requests and Flow Control frames sent can have a DLC of 8 bytes, or just the length of the frame
         DGN_SEND_8_BYTES = True

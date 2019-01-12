@@ -7,13 +7,13 @@ CAN library for working with frames/signals, diagnostics and CCP/XCP
 import threading
 from collections import deque
 from time import clock
-from ..data import ECUextract
-from ..data import DBC
-from ..dgn import dgncan_available
+from data import ECUextract
+from data import DBC
+from dgn import dgncan_available
 from .ccp_cfg import ccpcan_available
 from .xcp_cfg import xcpcan_available
 if dgncan_available:
-    from ..dgn import *
+    from dgn import *
 if ccpcan_available:
     from .ccp import *
 if xcpcan_available:
