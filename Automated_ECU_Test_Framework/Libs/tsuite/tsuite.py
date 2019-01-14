@@ -20,34 +20,24 @@ CHANGE LOG
 
 import sys
 import os
-import time
 from openpyxl import *
 
-pythonpath="c:\Python27\python.exe"
-testcaseFile = str(sys.argv[1])
-testcaseFileSheet = str(sys.argv[2])
-testcaseDirectory = sys.argv[3]
-testcaseScriptFile = testcaseFile.split('.')[0]
-testcaseScriptFile = testcaseScriptFile + "_" + testcaseFileSheet
 
-
-
-
-#Before Calling the init test suite class somewhere add the message for checking the format for excel
 class Testsuite:
     '''
     Class for accessing the Framework functionalities.
     '''
 
-    def __init__(self,workBookName='',workSheetName='',tableHdrRow=17,rowTypeCol=0,cmdTypeCol=1,reqIDCol=2,testNameCol=3,testDescCol=4,testCondCol=5,expResCol=6,actResCol=7,testResCol=8,commentCol=9,first_TH_row=18):
+    def __init__(self,workBookName='',workSheetName='',workBookPath='',tableHdrRow=17,rowTypeCol=0,cmdTypeCol=1,reqIDCol=2,testNameCol=3,testDescCol=4,testCondCol=5,expResCol=6,actResCol=7,testResCol=8,commentCol=9,first_TH_row=18):
         '''
         Description: Constructor. Access the physical communication device.
 
         Example:
             tsuiteObj = Testsuite()
         '''
-        self.workBookName  = workBookName
+        self.workBookName  = workBookName.split('.')[0]
         self.workSheetName = workSheetName
+        self.workBookPath  = workBookPath
 
         self.tableHdrRow = tableHdrRow
         self.rowTypeCol  = rowTypeCol
@@ -71,25 +61,16 @@ class Testsuite:
 
 #TODO change the functions name at all instances EXCEL PATH
 
-    def Excel_Path(self):
+    def readTestWorkbook(self):
         '''
         Description: This function open Excel sheet in which all test cases are written.
-        user shoud store excel sheet in current working directory.
+        user shoud keep the testcase excel sheet in Testsuite folder.
         '''
-        self.testcaseFile = str(sys.argv[1])
-        self.testcaseFileSheet = str(sys.argv[2])
-        self.testcaseDirectory = sys.argv[3]
-        self.book_path = self.testcaseDirectory + "\\" + self.testcaseFile #path of excelsheet
-        self.book = load_workbook(filename = str(self.book_path))
-        self.xl_sheet = self.book.get_sheet_by_name(str(testcaseFileSheet))
+        self.book = load_workbook(filename = str(self.workBookPath + "\\" + self.workBookName + '.xlsm'))
+        self.xl_sheet = self.book[self.workSheetName]
 
-        print "Excel_Path Called inside tsuite"
 
-    def get_workbookpath(self):
-        return str(self.testcaseDirectory + "\\" + self.testcaseFile) #path of excelsheet
-    def get_worksheet(self):
-        return str(self.testcaseFileSheet)
-    def fill_Test_data(self):
+    def createDataDictionary(self):
 
         #-------------Check for TH at first pos
         if((str(self.xl_sheet.cell(self.curr_row,self.rowTypeCol).value)=='TS')):
@@ -98,9 +79,6 @@ class Testsuite:
             print "\n#######################################"
             sys.exit()
         #--------------------
-
-
-
 
         if((str(self.xl_sheet.cell(self.curr_row,self.rowTypeCol).value)=='END Line. Do Not Remove')):
             print "ERROR ADD SOME DATA TO THE SHEET"
@@ -182,11 +160,27 @@ class Testsuite:
             self.totaltests=str(self.Test_Case_Cnt)
             print "Added data of row %s" %self.curr_row
 
-#     def printdata(self): #to print ids(/addr) of all the list items
-#         for i in self.list_of_tests:
-#             print "points to",id(i)
+
+    def get_workbookpath(self):
+        return str(self.workBookPath + "\\" + self.workBookName + '.xlsm') #path of excelsheet
+
+
+    def get_worksheet(self):
+        return str(self.workSheetName)
+
+
+    def get_pyScriptFileName(self):
+        return str(self.workBookName + '_' + self.workSheetName + '.py')
+
+
+    def get_batchScriptFileName(self):
+        return str(self.workBookName + '_' + self.workSheetName + '.bat')
+
+
     def get_totaltests(self):
         return self.Test_Case_Cnt
+
+
     def get_keys(self):
         if(
            self.list_of_tests[0].keys()!=None
@@ -196,159 +190,133 @@ class Testsuite:
             print "Error\nDictionary not filled\n"
 
 
-    def get_sheettitle(self):
+    def get_Title(self):
         return str(self.xl_sheet.cell(4,self.testNameCol).value)
-    def get_sheetauthor(self):
+
+
+    def get_Author(self):
         return str(self.xl_sheet.cell(6,self.testNameCol).value)
-    def get_sheetproject(self):
+
+
+    def get_Project(self):
         return str(self.xl_sheet.cell(8,self.testNameCol).value)
-    def get_sheetsoftwareversion(self):
+
+
+    def get_SoftwareVersion(self):
         return str(self.xl_sheet.cell(10,self.testNameCol).value)
-    def get_sheethardwareversion(self):
+
+
+    def get_HardwareVersion(self):
         return str(self.xl_sheet.cell(12,self.testNameCol).value)
-    def get_sheetnetwork(self):
+
+
+    def get_NetworkType(self):
         return str(self.xl_sheet.cell(14,self.testNameCol).value)
 
-    def get_sheetCANchannel(self):
+
+    def get_CANChannelID(self):
         return str(self.xl_sheet.cell(4,self.actResCol).value)
-    def get_sheetCANchannelBR(self):
+
+
+    def get_CANChannelBR(self):
         return str(self.xl_sheet.cell(4,self.testResCol).value)
 
-    def get_sheetLINchannel(self):
+
+    def get_LINChannelID(self):
         return str(self.xl_sheet.cell(6,self.actResCol).value)
-    def get_sheetLINchannelBR(self):
+
+
+    def get_LINChannelBR(self):
         return str(self.xl_sheet.cell(6,self.testResCol).value)
 
-    def get_sheetflexraychannel(self):
+
+    def get_FlexrayChannelID(self):
         return str(self.xl_sheet.cell(8,self.actResCol).value)
-    def get_sheetflexraychannelBR(self):
+
+
+    def get_FlexrayChannelBR(self):
         return str(self.xl_sheet.cell(8,self.testResCol).value)
 
-    def get_dbcpath(self):
+
+    def get_DbcPath(self):
         return str(self.xl_sheet.cell(10,self.actResCol).value)
-#                              'Row_TYPE' :'',
-#                              'TS_Command_TYPE':self.commandType,#Addded
-#                              'TH_Requirement_ID':'',
-#                              'TH_Test_NAME':'',
-#                              'TH_Test_DESCRIPTION':'',
-#                              'TS_Test_DESCRIPTION':self.testDescription,#
-#                              'TS_Test_CONDITION':self.testConditions,
-#                              'TS_Expected_RESULT':self.expectedResult,
-#                              'TS_Actual_RESULT':self.actualResult,
-#                              'TS_Test_RESULT':self.testResults,
-#                              'TS_Comments':self.comments,
-#                              'TH_Tscount':''
+
+
     def get_testcommandtype(self,testcasenumber,teststepnumber):
         return str(self.list_of_tests[testcasenumber]['TS_Command_TYPE'][teststepnumber])
+
 
     def get_testrequirementid(self,testcasenumber):
         return str(self.list_of_tests[testcasenumber]['TH_Requirement_ID'])
 
+
     def get_testname(self,testcasenumber):
         return str(self.list_of_tests[testcasenumber]['TH_Test_NAME'])
+
 
     def get_testdescription(self,testcasenumber):
         return str(self.list_of_tests[testcasenumber]['TH_Test_DESCRIPTION'])
 
+
     def get_teststepdescription(self,testcasenumber,teststepnumber):
         return str(self.list_of_tests[testcasenumber]['TS_Test_DESCRIPTION'][teststepnumber])
+
 
     def get_testconditions(self,testcasenumber,teststepnumber):
         return str(self.list_of_tests[testcasenumber]['TS_Test_CONDITION'][teststepnumber])
 
+
     def get_expectedresult(self,testcasenumber,teststepnumber):
         return str(self.list_of_tests[testcasenumber]['TS_Expected_RESULT'][teststepnumber])
+
 
     def get_actualresult(self,testcasenumber,teststepnumber):
         return str(self.list_of_tests[testcasenumber]['TS_Actual_RESULT'][teststepnumber])
 
+
     def get_testresults(self,testcasenumber,teststepnumber):
         return str(self.list_of_tests[testcasenumber]['TS_Test_RESULT'][teststepnumber])
 
+
     def get_comments(self,testcasenumber,teststepnumber):
         return str(self.list_of_tests[testcasenumber]['TS_Comments'][teststepnumber])
+
 
     def get_numberofteststeps(self,testcasenumber):
         return str(self.list_of_tests[testcasenumber]['TH_Tscount'])
 
 #-------------------------Function Definitons related to Script writing begin from here---------------------------------------------------
 
-#----------------------------Opening the python file-----------------------------------------------------------------
+#----------------------------Create Folder Structures--------------------------------------------------
+    def createFolders(self):
+        '''
+        Description: This function will create folder structure for each testSheet
+
+        '''
+        createDir  = self.workBookPath + "\\" + self.workBookName + "\\" + self.workSheetName
+
+        if not os.path.exists(createDir):
+            os.makedirs(createDir)
+
+#----------------------------Opening the python file---------------------------------------------------
     def openPythonFile(self):
         '''
-        Description:This function will create new Python file i.e .py file for each testSheet
+        Description: This function will create new Python file i.e .py file for each testSheet
+                     along with corresponding folder structure.
         '''
+        pytitle = self.workBookPath + "\\" + self.workBookName + "\\" + self.workSheetName + "\\"  + self.get_pyScriptFileName()
+        self.fo = open(pytitle,'w')    #open file in write mode
 
-        if ".xlsm" in self.testcaseFile:
-            self.testcaseScriptFile = self.testcaseFile.replace('.xlsm', '')
-        elif ".xlsx" in self.testcaseFile:
-            self.testcaseScriptFile = self.testcaseFile.replace('.xlsx', '')
-        elif ".XLSX" in self.testcaseFile:
-            self.testcaseScriptFile = self.testcaseFile.replace('.XLSX', '')
-        elif ".XLS" in self.testcaseFile:
-            self.testcaseScriptFile = self.testcaseFile.replace('.XLS', '')
-        elif ".xls" in self.testcaseFile:
-            self.testcaseScriptFile = self.testcaseFile.replace('.xls', '')
-
-        if self.testcaseScriptFile != "":
-            newpath = self.cwd + "\\"  + 'Testsuite\\' + self.testcaseScriptFile + "\\" + self.testcaseFileSheet
-            #self.testcaseScriptFile = self.testcaseScriptFile + "_" + self.testcaseFileSheet
-            if not os.path.exists(newpath):
-                os.makedirs(newpath)
-            self.pytitle = newpath + "\\"  + self.testcaseScriptFile + "_" + self.testcaseFileSheet +'.py'
-            self.batchtitle = newpath + "\\"  + self.testcaseScriptFile+ "_" + self.testcaseFileSheet +'.bat'
-
-            #===================================================================
-            # self.pytitle = self.cwd + "\\"  + 'Libs\\' + self.testcaseScriptFile +'.py'
-            # self.batchtitle = self.cwd + "\\" + 'Libs\\'  + self.testcaseScriptFile +'.bat'
-            #===================================================================
-
-        else:
-            raw_input('\nUser has not entered valid choice')
-            sys.exit()
-
-        self.fo = open(self.pytitle,'w') #open file in write mode
-        self.batchfo = open(self.batchtitle,'w')#open file in write mode
-        print "file_creation Called inside tsuite"
-#--------------------------------------------------------------------------------------------------------------------
-#-----------------------------Write Batchfile------------------------------
-    def write_batchfile(self):
+#-----------------------------Write Batchfile----------------------------------------------------------
+    def createBatchFile(self):
         '''
         Description: This Function writes to batch file that executes corresponding .py file
         '''
-        self.batchfo = open(self.batchtitle,'w')#open file in write mode
-        self.batchfo.write(pythonpath + " %s" %(testcaseScriptFile +'.py'))
+        batchtitle = self.workBookPath + "\\" + self.workBookName + "\\" + self.workSheetName + "\\"  + self.get_batchScriptFileName()
+
+        self.batchfo = open(batchtitle,'w') #open file in write mode
+        self.batchfo.write("C:\Python27\python.exe" + " %s" %(self.get_pyScriptFileName()))
         self.batchfo.close()
-        print "write_batchfile Called inside tsuite"
-#-------------------------------------------------------------------
-#--------------------------- Python TestCase function Definition ----------------------------------#
-
-    def writeTestCaseDef(self,testcasenumber):
-            '''
-            Description:This function starts to write new test case in .py file
-            it writes test description ,test case requirment id to py file.
-            '''
-            test_name      = self.get_testname(testcasenumber)
-            test_case_desc = self.get_testdescription(testcasenumber)
-            test_case_reqs = self.get_testrequirementid(testcasenumber)
-
-            self.fo.write("\n#######################")
-            self.fo.write("\n## Test Case %s       ##" %(testcasenumber+1))
-            self.fo.write("\n#######################"+ '\n' + '\n')
-            self.fo.write('def test_%s():\n' %(str(testcasenumber)))
-
-
-            self.TD = test_name.replace('\'','\"')  #in Test Name Statement replace ' with " for indentation
-            self.TD = self.TD.replace('\n',' ')   #in Test Name Statement replace \n with ' ' for indentation
-            self.TN = test_case_desc.replace('\n',' ')  #in Test Description Statement replace \n with ' ' for indentation
-            self.TN = self.TN.replace('\'','\"')  #in Test Description Statement replace ' with " for indentation
-
-            self.fo.write("    test_case_name = 'Test Case %s: %s'\n" % (testcasenumber+1,self.TD))#Write Test Name
-            self.fo.write("    test_case_desc = '%s'\n" %self.TN) #Write Test Description
-            self.fo.write("    test_case_reqs = '%s'\n" % test_case_reqs.replace('\n',' ') ) #Write Test Requirment ID
-            self.fo.write("    print test_case_name\n\n")
-            self.fo.write("    report.add_test_case(test_case_name, test_case_desc, test_case_reqs)\n\n")
-
 
 #---------------------------- Generate Copyright header -------------------------------------------#
     def writeCopyright(self):
@@ -369,8 +337,7 @@ class Testsuite:
         self.fo.write("\nimport time")
         self.fo.write("\nimport Tkinter as tk")
         self.fo.write("\nimport tkMessageBox")
-
-#---------------------------------------------------------------------------------------------------------
+        self.fo.write("\nfrom openpyxl import *")
 
 #---------------------------- Generate Path Settings -----------------------------------------------#
     def writePathSettings(self):
@@ -381,7 +348,7 @@ class Testsuite:
         creates object for t32,com
         '''
         self.fo.write("\n\nREPORT_API_PATH = os.path.abspath(r'../../../Libs/report')")
-        self.fo.write("\nCOM_API_PATH = os.path.abspath(r'../../../Libs/com')\n")
+        self.fo.write("\nCOM_API_PATH = os.path.abspath(r'../../../Libs/com')")
 
         self.fo.write("\n\n# Adding paths for loading correctly .py libraries")
         self.fo.write("\nsys.path.append(REPORT_API_PATH)")
@@ -389,38 +356,29 @@ class Testsuite:
 
         self.fo.write("\n\nfrom report import *")
         self.fo.write("\nfrom com import *")
-        self.fo.write("\nfrom openpyxl import *")
 
-        self.fo.write("\nextrasfunc_path = os.path.abspath(r'../../../Testsuite/')")
+        self.fo.write("\n\nextrasfunc_path = os.path.abspath(r'../../../Testsuite/')")
         self.fo.write("\nsys.path.insert(0,extrasfunc_path)")
         self.fo.write("\nfrom Extras import *")
 
-#--------------------------------------------------------------------------------------------------
 #---------------------------- Generate Report Settings ---------------------------------------------#
     def writeReportSettings(self):
         '''
         Description:This function write all extracted values(from excel sheet) regarding the report header in .py file
         '''
         self.fo.write("\n\n\n# Report Header Variables")
-        self.fo.write("\nAUTHOR = '%s'" %self.get_sheetauthor())
-        self.fo.write("\nTLA = '%s'" % self.get_sheettitle() )
-        self.fo.write("\nPROJECT_NAME = '%s'" % self.get_sheetproject() )
-        self.fo.write("\nHW_VERSION = '%s'" %  self.get_sheethardwareversion())
-        self.fo.write("\nNETWORK_TYPE = '%s'" % self.get_sheetnetwork())
-        self.fo.write("\nSW_VERSION = '%s'" % self.get_sheetsoftwareversion())
+        self.fo.write("\nAUTHOR = '%s'" %self.get_Author())
+        self.fo.write("\nTLA = '%s'" % self.get_Title() )
+        self.fo.write("\nPROJECT_NAME = '%s'" % self.get_Project() )
+        self.fo.write("\nHW_VERSION = '%s'" %  self.get_HardwareVersion())
+        self.fo.write("\nNETWORK_TYPE = '%s'" % self.get_NetworkType())
+        self.fo.write("\nSW_VERSION = '%s'" % self.get_SoftwareVersion())
         self.fo.write("\n\n# Create the report object, specifying the test data")
         self.fo.write("\nreport = HTMLReport(TLA, PROJECT_NAME, SW_VERSION, HW_VERSION, NETWORK_TYPE, AUTHOR)")
-#--------------------------------------------------------------------------------------------------
-#--------------------------------Open Workbook/worksheet-------------------------------------------
-    def writewbinit(self):
+        self.fo.write("\n\n# Create Excel Report")
+        self.fo.write("\nxl_report = load_workbook(filename = '%s')" %self.get_workbookpath())
+        self.fo.write("\nxl_sheet = xl_report['%s']" %self.workSheetName)
 
-        self.fo.write("\nbook = load_workbook(filename = '%s')"%self.get_workbookpath())
-        self.fo.write("\nxl_sheet = book.get_sheet_by_name('%s')" %self.get_worksheet())
-#---------------------------------------------------------------------------------------------------
-#--------------------------------required line to save the modified xl data ----------------------------------------
-    def writexlsave(self):
-        self.fo.write("book.save('%s'+'/'+'result.xlsx')\n"%self.testcaseDirectory)
-#---------------------------------------------------------------------------------------------------
 #-----------Writes the code required fot Actual response part of the excel sheet---------------------
     def writexlrespfunction(self):
         self.fo.write("\ndef xl_response(print_row,print_column):")
@@ -431,7 +389,6 @@ class Testsuite:
 
         self.fo.write("\n    return str(response_str)")
 
-#---------------------------------------------------------------------------------------------------
 #---------------------------Wrtie Channel setting to the py file------------------------------------
     def writeChannelSettings(self):
         '''
@@ -443,8 +400,8 @@ class Testsuite:
         self.fo.write("##               Set CAN,LIN,FR Channels                       ##\n")
         self.fo.write("#################################################################\n")
         self.fo.write("\ncom = Com('VECTOR')")
-        self.fo.write("\ncanObj = com.open_can_channel(int(%s),int(%s))" % (self.get_sheetCANchannel(), self.get_sheetCANchannelBR()))
-#---------------------------------------------------------------------------------------------------
+        self.fo.write("\ncanObj = com.open_can_channel(int(%s),int(%s))" % (self.get_CANChannelID(), self.get_CANChannelBR()))
+
 #---------------------------- Generate Precondition Statements -------------------------------------#
 
     def processTypePERIODIC_TP(self,testcasenumber,teststepnumber):
@@ -465,18 +422,18 @@ class Testsuite:
         else:
             print "\n.py Generation related to Periodic TP failed\n"
 
-#---------------------------------------------------------------------------------------------------
+
 #---------------------------- Generate Precondition Statements -------------------------------------#
     def writePreconditions(self):
         self.fo.write("\n\n")
         self.fo.write("#################################################################\n")
         self.fo.write("##      Load dbc,Periodic Tester Present,Periodic NM message   ##\n")
         self.fo.write("#################################################################\n")
-        self.fo.write("\ncanObj.load_dbc('%s')" % self.get_dbcpath())
+        self.fo.write("\ncanObj.load_dbc('%s')" % self.get_DbcPath())
         self.fo.write("\ncanObj.send_cyclic_frame('BCCM_NM51F',100)")
         self.fo.write("\ncanObj.dgn.ecu_reset(0x01)" )
         self.fo.write("\ntime.sleep(1)\n" )
-#---------------------------------------------------------------------------------------------------
+
 #---------------------------- Generate GetActualResponseFrames() Function --------------------------#
     def writeGetActualRespDef(self):
         self.fo.write("\ndef GetActualResponseFrames():\n")
@@ -486,7 +443,7 @@ class Testsuite:
         self.fo.write("    response_str = response_str.replace(']','')\n")
         self.fo.write("    response_str = response_str.replace(' ','')\n")
         self.fo.write("    return response_str\n\n\n")
-#---------------------------------------------------------------------------------------------------
+
 #---------------------------- Generate InvokeMessageBox() Function ---------------------------------#
     def writeInvokeMsgBoxDef(self):
         self.fo.write("\ndef InvokeMessageBox(MessageStr):\n")
@@ -499,18 +456,40 @@ class Testsuite:
         self.fo.write("""    root.attributes("-topmost", True)\n""")
         self.fo.write("""    tkMessageBox.showinfo("Manual Input Required", MessageStr)\n""")
         self.fo.write("    root.destroy()\n")
-#---------------------------------------------------------------------------------------------------
+
+#--------------------------- Python TestCase function Definition ----------------------------------#
+    def writeTestCaseDef(self,testcasenumber):
+            '''
+            Description:This function starts to write new test case in .py file
+            it writes test description ,test case requirment id to py file.
+            '''
+            test_name      = self.get_testname(testcasenumber)
+            test_case_desc = self.get_testdescription(testcasenumber)
+            test_case_reqs = self.get_testrequirementid(testcasenumber)
+
+            self.fo.write("\n#######################")
+            self.fo.write("\n## Test Case %s       ##" %(testcasenumber+1))
+            self.fo.write("\n#######################"+ '\n' + '\n')
+            self.fo.write('def test_%s():\n' %(str(testcasenumber)))
+
+            self.TD = test_name.replace('\'','\"')  #in Test Name Statement replace ' with " for indentation
+            self.TD = self.TD.replace('\n',' ')   #in Test Name Statement replace \n with ' ' for indentation
+            self.TN = test_case_desc.replace('\n',' ')  #in Test Description Statement replace \n with ' ' for indentation
+            self.TN = self.TN.replace('\'','\"')  #in Test Description Statement replace ' with " for indentation
+
+            self.fo.write("    test_case_name = 'Test Case %s: %s'\n" % (testcasenumber+1,self.TD))#Write Test Name
+            self.fo.write("    test_case_desc = '%s'\n" %self.TN) #Write Test Description
+            self.fo.write("    test_case_reqs = '%s'\n" % test_case_reqs.replace('\n',' ') ) #Write Test Requirment ID
+            self.fo.write("    print test_case_name\n\n")
+            self.fo.write("    report.add_test_case(test_case_name, test_case_desc, test_case_reqs)\n\n")
+
+
 #-------------------------process DIAG_EVAL FOR special handling------------------------------------
-# refet to extra.py in the TEstsuite for the function def
-#refet to extra.py in the TEstsuite for the function def
     def processTypeDIAG_EVAL(self,testcasenumber,teststepnumber):
         self.fo.write("    #######################################\n")  #Print row number of excel sheet
         self.fo.write("    #Code block generated for row no = %s  #\n" %self.writerow_number)
         self.fo.write("    ##################################### #\n\n")
 
-
-
-#---------------------------------------------------------------------------------------------------
 
 #------------------------------ Process DIAG type test steps ---------------------------------------#
     def processTypeDIAG(self,testcasenumber,teststepnumber):
@@ -597,7 +576,7 @@ class Testsuite:
                 self.fo.write("\n        test_step_Comment ='Test Fails.'")
                 self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
                 self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-#
+
         elif Diag_Service[0:2]=='31': # Check for diagnostic service ID is "ROUTINE ID"
 
             PID = Diag_Service[2:4]          #Extract PID Number
@@ -674,7 +653,7 @@ class Testsuite:
                 self.fo.write("\n        test_step_Comment ='Test Fails.'")
                 self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
                 self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-#
+
         elif Diag_Service[0:2]=='22': # Check for diagnostic service ID is "READ DID"
 
             PID='0x'+Diag_Service[2:6] #Extract PID Number
@@ -745,8 +724,6 @@ class Testsuite:
                 self.fo.write("\n        test_step_Comment ='Test Fails.'")
                 self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
                 self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-#
-
 
         elif Diag_Service[0:2]=='10': # Check for diagnostic service ID is "Session CTRL DID"
 
@@ -832,7 +809,7 @@ class Testsuite:
                 self.fo.write("\n        test_step_Comment ='Test Fails.'")
                 self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
                 self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-#
+
         elif Diag_Service[0:2]=='27': # Check for diagnostic service ID is "Security Access ID"
 
             PID=Diag_Service[2:4] #Extract Session Number
@@ -901,7 +878,6 @@ class Testsuite:
                 self.fo.write("\n        test_step_Comment ='Test Fails.'")
                 self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
                 self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-#
 
         elif Diag_Service[0:2]=='19': # Check for diagnostic service ID is "READ DTC Information"
 
@@ -977,7 +953,6 @@ class Testsuite:
                 self.fo.write("\n        test_step_Comment ='Test Fails.'")
                 self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
                 self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-#
 
         elif Diag_Service[0:2]=='2E': # Check for diagnostic service ID is "write DID"
 
@@ -1067,7 +1042,7 @@ class Testsuite:
                 self.fo.write("\n        test_step_Comment ='Test Fails.'")
                 self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
                 self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-#
+
         elif Diag_Service[0:2]=='14': # Check for diagnostic service ID is "Clear Diagnosice Information"
 
             PID = Diag_Service[2:4] #Extract Subfunction
@@ -1229,12 +1204,6 @@ class Testsuite:
                 self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
         self.fo.write("\n    xl_response(%s,%s)\n"%(self.writerow_number,self.actResCol))
 
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #------------------------------ Process POPUP type test steps ---------------------------------------#
     def processTypePOPUP(self,testcasenumber, teststepnumber):
@@ -1268,7 +1237,6 @@ class Testsuite:
         self.fo.write(r"    report.add_test_step(test_step_Desc,True,'','')") #Report
         self.fo.write("\n")
         self.fo.write("\n")
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #------------------------------ Process DELAY type test steps ---------------------------------------#
     def processTypeDELAY(self,testcasenumber, teststepnumber):
@@ -1315,7 +1283,6 @@ class Testsuite:
         self.fo.write(r"    report.add_test_step(test_step_Desc,True,'','')") #Report
         self.fo.write("\n")
         self.fo.write("\n")
-#-----------------------------------------------------------------------------------------------------------------------------
 
 #------------------------------ Process CANSIGNAL type test steps ---------------------------------------#
     def processTypeCANSIGNAL(self,testcasenumber, teststepnumber):
@@ -1406,7 +1373,6 @@ class Testsuite:
         else:
             print "Test Condition entered is incorrect !!"
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #------------------------------ Process CANFRAME type test steps ---------------------------------------#
     def processTypeCANFRAME(self,testcasenumber, teststepnumber):
@@ -1470,21 +1436,22 @@ class Testsuite:
             self.fo.write("\n    print '%s'\n"%self.get_teststepdescription(testcasenumber, teststepnumber))
         else:
             print "Test Condition entered is incorrect !!"
-#----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #-------------------------------------------- Generate EndTest Function ---------------------------------------#
     def writeEndTestDef(self):
         self.fo.write("\n\ndef endTest():")
+        self.fo.write("\n    xl_report.save('%s'+'/'+'result.xlsx')" %self.workBookPath)
         self.fo.write("\n    report.generate_report()")
         self.fo.write("\n    canObj.dgn.iso.net.log_file = report.get_log_dir()")
         self.fo.write("\n    canObj.dgn.save_logfile()")
         self.fo.write("\n    canObj.dgn.stop_periodic_tp()")
         self.fo.write("\n    canObj.stop_cyclic_frame('BCCM_NM51F')")
+        self.fo.write("\n    os.startfile('%s'+'/'+'result.xlsx')" %self.workBookPath)
         self.fo.write("\n")
         self.fo.write(r"    print '\nScript Execution Finished !!'")
         self.fo.write("\n")
         self.fo.write("\n    com.exit()\n\n\n\n")
-#--------------------------------------------------------------------------------------------------------------------------------
+
 #------------------------------------------------ Generate Calling of Test Functions ------------------------------------------#
     def writeCallingOfTestcases(self):
         self.fo.write("\n#############################")
@@ -1497,12 +1464,11 @@ class Testsuite:
             self.fo.write("test_%s()\n" %Cnt)
             Cnt+=1
             self.fo.write("time.sleep(1)\n")
-#---------------------------------------------------------------------------------------------------------------------------------
+
 #-------------------------------------------- Finish writing the Python file -------------------------------------------------#
     def closePythonFile(self):
         self.fo.write("\n# Perform End actions i.e Save log files, Generate Report etc..")
         self.fo.write("\nendTest()")
-        self.fo.write("\nos.startfile('%s'+'/'+'result.xlsx')\n"%self.testcaseDirectory)
         self.fo.close()
 
 #------------------------------------------------------------------------------------------------------------------------------------
