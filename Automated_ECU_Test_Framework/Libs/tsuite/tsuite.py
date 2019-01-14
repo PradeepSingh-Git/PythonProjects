@@ -317,7 +317,7 @@ class Testsuite:
         Description: This Function writes to batch file that executes corresponding .py file
         '''
         self.batchfo = open(self.batchtitle,'w')#open file in write mode
-        self.batchfo.write(pythonpath + "%s" %(self.testcaseScriptFile +'.py'))
+        self.batchfo.write(pythonpath + " %s" %(testcaseScriptFile +'.py'))
         self.batchfo.close()
         print "write_batchfile Called inside tsuite"
 #-------------------------------------------------------------------
