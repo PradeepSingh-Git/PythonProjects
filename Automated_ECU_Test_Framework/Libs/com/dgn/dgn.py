@@ -577,3 +577,9 @@ class DGN(object):
         '''
         if self.print_service: print "Control DTCs setting to", hex(dtc_setting_type)
         return self.iso.service_0x85(dtc_setting_type)
+  
+
+    def diagnostic_alltypes(self,reqDataList):
+        
+        return self.iso.diag_service(reqDataList)
+        

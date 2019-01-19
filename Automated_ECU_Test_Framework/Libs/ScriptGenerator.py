@@ -77,7 +77,9 @@ for testcase in range(0,tsuiteObj.get_totaltests()):
 
     if(count<=tsuiteObj.get_totaltests):
         for teststep in range(0,int(tsuiteObj.get_numberofteststeps(testcasenumber))):
+
             tsuiteObj.writerow_number+=1
+
             if tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber)   == 'DIAG':
                 tsuiteObj.processTypeDIAG(testcasenumber,teststepnumber)
 
@@ -87,15 +89,26 @@ for testcase in range(0,tsuiteObj.get_totaltests()):
             elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'DELAY_SEC':
                 tsuiteObj.processTypeDELAY(testcasenumber,teststepnumber)
 
-            elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'CAN_SIGNAL':
-                tsuiteObj.processTypeCANSIGNAL(testcasenumber,teststepnumber)
-
-            elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'CAN_FRAME':
-                tsuiteObj.processTypeCANFRAME(testcasenumber,teststepnumber)
-
             elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'PERIODIC_TP':
                 tsuiteObj.processTypePERIODIC_TP(testcasenumber,teststepnumber)
 
+            elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'CAN_START':
+                tsuiteObj.processTypeCANSTART(testcasenumber,teststepnumber)
+
+            elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'CAN_STOP':
+                tsuiteObj.processTypeCANSTOP(testcasenumber,teststepnumber)
+
+            elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'RX_CAN':
+                tsuiteObj.processTypeRX_CAN(testcasenumber,teststepnumber)
+
+            elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'TX_CAN':
+                tsuiteObj.processTypeTX_CAN(testcasenumber,teststepnumber)
+
+            elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'STARTCAN_CYCLICFRAME':
+                tsuiteObj.processTypeSTARTCANCYCLICFRAME(testcasenumber,teststepnumber)
+
+            elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'STOPCAN_CYCLICFRAME':
+                tsuiteObj.processTypeSTOPCANCYCLICFRAME(testcasenumber,teststepnumber)
 
             else:  #Check if none of the Command Type is provided
                 print "\nCommand Type is not selected for test step"
@@ -113,6 +126,7 @@ for testcase in range(0,tsuiteObj.get_totaltests()):
 tsuiteObj.writeEndTestDef()
 tsuiteObj.writeCallingOfTestcases()
 tsuiteObj.closePythonFile()
+
 
 print "\n-------------------END OF WRITING TESTCASES TO PYTHON SCRIPT--------------------\n"
 

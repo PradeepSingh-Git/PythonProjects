@@ -436,3 +436,7 @@ class ISO14229():
         templist = [[0x85], [dtc_setting_type], control_option]
         rawlist = [item for sublist in templist for item in sublist]
         return self.net.send_request(rawlist, self._reqtype)
+
+    def diag_service(self,datalist):
+        
+        return self.net.send_request(datalist,self._reqtype)

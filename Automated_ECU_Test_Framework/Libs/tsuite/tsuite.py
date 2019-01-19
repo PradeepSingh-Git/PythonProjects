@@ -376,7 +376,7 @@ class Testsuite:
         self.fo.write("\n\n# Create the report object, specifying the test data")
         self.fo.write("\nreport = HTMLReport(TLA, PROJECT_NAME, SW_VERSION, HW_VERSION, NETWORK_TYPE, AUTHOR)")
         self.fo.write("\n\n# Create Excel Report")
-        self.fo.write("\nxl_report = load_workbook(filename = '%s')" %self.get_workbookpath())
+        self.fo.write("\nxl_report = load_workbook(filename = r'%s')" %self.get_workbookpath())
         self.fo.write("\nxl_sheet = xl_report['%s']" %self.workSheetName)
 
 #-----------Writes the code required fot Actual response part of the excel sheet---------------------
@@ -429,7 +429,7 @@ class Testsuite:
         self.fo.write("#################################################################\n")
         self.fo.write("##      Load dbc,Periodic Tester Present,Periodic NM message   ##\n")
         self.fo.write("#################################################################\n")
-        self.fo.write("\ncanObj.load_dbc('%s')" % self.get_DbcPath())
+        self.fo.write("\ncanObj.load_dbc(r'%s')" % self.get_DbcPath())
         self.fo.write("\ncanObj.send_cyclic_frame('BCCM_NM51F',100)")
         self.fo.write("\ncanObj.dgn.ecu_reset(0x01)" )
         self.fo.write("\ntime.sleep(1)\n" )
@@ -439,9 +439,10 @@ class Testsuite:
         self.fo.write("\ndef GetActualResponseFrames():\n")
         self.fo.write("    response_str = ''\n")
         self.fo.write("    response_str = canObj.dgn.req_info_raw().split('Rsp:')[1]\n")
-        self.fo.write("    response_str = response_str.replace('[','')\n")
-        self.fo.write("    response_str = response_str.replace(']','')\n")
-        self.fo.write("    response_str = response_str.replace(' ','')\n")
+        self.fo.write("    if(response_str != []):\n")
+        self.fo.write("        response_str = response_str.replace('[','')\n")
+        self.fo.write("        response_str = response_str.replace(']','')\n")
+        self.fo.write("        response_str = response_str.replace(' ','')\n")
         self.fo.write("    return response_str\n\n\n")
 
 #---------------------------- Generate InvokeMessageBox() Function ---------------------------------#
@@ -484,11 +485,152 @@ class Testsuite:
             self.fo.write("    report.add_test_case(test_case_name, test_case_desc, test_case_reqs)\n\n")
 
 
-#-------------------------process DIAG_EVAL FOR special handling------------------------------------
-    def processTypeDIAG_EVAL(self,testcasenumber,teststepnumber):
-        self.fo.write("    #######################################\n")  #Print row number of excel sheet
-        self.fo.write("    #Code block generated for row no = %s  #\n" %self.writerow_number)
-        self.fo.write("    ##################################### #\n\n")
+#------------------------------Generate Code for RX_CAN------------------------------------------------------#
+    def writeRX_CANcode(self,testcasenumber,teststepnumber):
+        if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
+
+            if(self.get_testconditions(testcasenumber, teststepnumber).find('.')>0):
+                self.fo.write("\n")
+                self.fo.write("\n    frame_name ='%s'"%str(self.get_testconditions(testcasenumber, teststepnumber).split('.')[0]))
+                self.fo.write("\n    signal_name='%s'"%str(self.get_testconditions(testcasenumber, teststepnumber).split('.')[1].replace(" ",'')))
+                self.fo.write("\n    print frame_name")
+                self.fo.write("\n    print signal_name")
+
+                self.fo.write("\n    print 'Reading %s-->>%s ' %(frame_name,signal_name)")
+                self.fo.write("\n    value=canObj.get_signal(signal_name,frame_name)")
+                self.fo.write("\n    if(value!='void') and Expec_res == str(value):")
+                self.fo.write("\n        print 'Value of Signal' + str(signal_name) + ' is ' + str(value)  ")
+            else:
+                self.fo.write("\n")
+                self.fo.write("\n    frame_name ='%s'"%str(self.get_testconditions(testcasenumber, teststepnumber).split('.')[0]))
+                self.fo.write("\n    print frame_name")
+                self.fo.write("\n    print 'Reading %s ' %frame_name")
+                self.fo.write("\n    if(value>1):")
+                self.fo.write("\n        value=str(canObj.get_frame(canObj.find_frame_id(frame_name)[0]))")
+                self.fo.write("\n        print 'The Frame' + str(frame_name) + ' is ' + str(value)  ")
+            self.fo.write("\n        test_step_Result = True")
+            self.fo.write("\n        test_step_Comment ='Test Successful.'")
+
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value=str(value))"%(self.writerow_number,self.actResCol))
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n    else:")
+            self.fo.write("\n        print 'Reading failed' ")
+            self.fo.write("\n        print value")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Test Fails!!'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n    ")
+        else:
+            self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
+            funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
+            funct_name = funct_name.split(':')[1]
+            funct_name = funct_name.replace('"','')
+            self.fo.write("\n    if(Actual_res[0:2]!='7F'):")
+            self.fo.write("\n        ret=%s(Actual_res)"%funct_name)
+            self.fo.write("\n    else:")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Test Fails.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n        ret=0")
+            self.fo.write("\n    if(ret==1):")
+            self.fo.write("\n        test_step_Result = True")
+            self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n    else:")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Test Fails.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+
+
+#------------------------------ Generate Code for TX_CAN -------------------------------------------------------#
+    def writeTX_CANcode(self,testcasenumber,teststepnumber):
+        if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
+
+            if(self.get_testconditions(testcasenumber, teststepnumber).find('.')>0):
+                self.fo.write("\n")
+                self.fo.write("\n    frame_name ='%s'"%str(self.get_testconditions(testcasenumber, teststepnumber).split('.')[0]))
+                self.fo.write("\n    signal_name='%s'"%str(self.get_testconditions(testcasenumber, teststepnumber).split('.')[1].replace(" ",'')))
+                self.fo.write("\n    print frame_name")
+                self.fo.write("\n    print signal_name")
+
+                self.fo.write("\n    print 'Writing %s-->>%s ' %(frame_name,signal_name)")
+
+                self.fo.write("\n    value=canObj.set_signal(signal_name,int(%s),frame_name)"%self.get_expectedresult(testcasenumber, teststepnumber))
+                self.fo.write("\n    canObj.send_cyclic_frame(frame_name,10)")
+                self.fo.write("\n\n\n    print int(%s)\n\n"%self.get_expectedresult(testcasenumber, teststepnumber))
+                self.fo.write("\n    if(value!=False):")
+                self.fo.write("\n        print 'Value of Signal' + str(signal_name) + ' is set to ' + str(%s)  "%self.get_expectedresult(testcasenumber, teststepnumber))
+                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='value')"%(self.writerow_number,self.actResCol))
+            else:
+                Can_Frame_Details=self.get_testconditions(testcasenumber, teststepnumber)
+                Can_Frame_Details=Can_Frame_Details.replace('\n',' ')
+
+
+                Can_Frame_Details=Can_Frame_Details.replace(' ','')
+
+                Can_Frame_Value_Str = Can_Frame_Details.split('=')[1]
+                Can_Frame_Details = Can_Frame_Details.split('=')[0]
+                Can_Frame_Details=Can_Frame_Details.split(']')[0]
+                Can_FrameID=Can_Frame_Details.split('[')[1]
+
+
+                Can_Frame_Value_List = []
+
+                for listIndex in xrange(0,len(Can_Frame_Value_Str),2):
+                    byteStr = ''
+                    for i in range(2):
+                        byteStr = byteStr + Can_Frame_Value_Str[listIndex + i]
+
+                        byteHex_str = '0x'+ byteStr
+                        Can_Frame_Value_List.append(byteHex_str)
+                if Can_FrameID != '' and Can_Frame_Value_Str != '':
+                    self.fo.write("\n    canObj.write_frame(%s, %s, [" %(Can_FrameID,len(Can_Frame_Value_List)))
+                    for i in range(len(Can_Frame_Value_List)):
+                        if i == (len(Can_Frame_Value_List)-1):
+                            self.fo.write("%s" %Can_Frame_Value_List[i])
+                        else:
+                            self.fo.write("%s," %Can_Frame_Value_List[i])
+                    self.fo.write("]) \n")
+
+
+
+                    self.fo.write("\n")
+                    self.fo.write("\n    frame_name ='%s'"%str(self.get_testconditions(testcasenumber, teststepnumber).split('.')[0]))
+                    self.fo.write("\n    print frame_name")
+                    self.fo.write("\n    print 'Writing %s ' %frame_name")
+
+                    self.fo.write("\n    print 'The Frame' + str(frame_name) + ' is ' + '%s'  "%Can_Frame_Value_Str)
+                    self.fo.write("\n    if(len(frame_name)>1):")
+                    self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='%s')"%(self.writerow_number,self.actResCol,Can_Frame_Value_Str))
+                    self.fo.write("\n        test_step_Result = True")
+                    self.fo.write("\n        test_step_Comment ='Test Successful.'")
+                    self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n    else:")
+            self.fo.write("\n        print 'Writing failed' ")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Writing On CAN bus failed!!'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n    ")
+        else:
+            self.fo.write("\n    #refer to extra.py in the Testsuite for the function def\n")
+            funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
+            funct_name = funct_name.split(':')[1]
+            funct_name = funct_name.replace('"','')
+            self.fo.write("\n    if(Actual_res[0:2]!='7F'):")
+            self.fo.write("\n        ret=%s(Actual_res)"%funct_name)
+            self.fo.write("\n    else:")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Test Fails.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n        ret=0")
+            self.fo.write("\n    if(ret==1):")
+            self.fo.write("\n        test_step_Result = True")
+            self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n    else:")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Test Fails.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
 
 
 #------------------------------ Process DIAG type test steps ---------------------------------------#
@@ -497,9 +639,12 @@ class Testsuite:
 
         test_step_Desc  = self.get_teststepdescription(testcasenumber, teststepnumber)#Description
         Comments_string = self.get_comments(testcasenumber, teststepnumber) #Comments
+        Comments_string = Comments_string.replace('\n',' ')
+
         Expec_res_raw   = self.get_expectedresult(testcasenumber,teststepnumber)     #Expected value of Test Step
+
         Expec_res_raw  = Expec_res_raw.replace('\n',' ')
-        Expec_res_raw   = Expec_res_raw.split('.')[0]
+
         Expec_res  = Expec_res_raw
         Expec_res  = Expec_res.replace('\n',' ')
         Expec_res  = Expec_res.replace(' ','')
@@ -508,701 +653,162 @@ class Testsuite:
         Diag_Service=self.get_testconditions(testcasenumber, teststepnumber)
         Diag_Service=Diag_Service.split('.')[0]
         Diag_Service = Diag_Service.replace(" ", "")
-        print_row = str(self.writerow_number)
 
-        if Diag_Service[0:2]=='11': # Check for diagnostic service ID is "RESET"
+        self.fo.write("\n")
+        self.fo.write("    #######################################\n")  #Print row number of excel sheet
+        self.fo.write("    #Code block generated for row no = %s  #\n" %self.writerow_number)
+        self.fo.write("    ##################################### #\n\n")
+        self.fo.write("    ################################\n")  # Reset By Diagnostics
+        self.fo.write("    #---------Service %s-----------#\n"%str(self.get_testconditions(testcasenumber,teststepnumber))[0:2])
+        self.fo.write("    ################################\n\n")
 
-            PID=Diag_Service[2:4] #Extract Reset Type
+        TD = test_step_Desc.replace('\n',' ')
+        TD = TD.replace('\'','\"')
+        self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+        self.fo.write("    test_step_Result = False\n" )
+        self.fo.write(r"    test_step_Comment = '\n'" )
+        self.fo.write("\n")
+        self.fo.write(r"    test_step_ResponseStr = '\n'" )
+        self.fo.write("\n")
+        #-------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>GET Exp res
+        self.fo.write("\n    Expec_res = '%s'\n"%Expec_res)
+        #-------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Check for SPR for Expected results containing Nothing
+        self.fo.write("\n")
+        self.fo.write("\n    if(Expec_res=='NONE'):")
+        self.fo.write("\n        canObj.dgn.iso.net.is_spr_req = True")
+        self.fo.write("\n    else:")
+        self.fo.write("\n        canObj.dgn.iso.net.is_spr_req = False")
+        #-------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>fill dgn data and send
+        self.fo.write("\n    datalist=[")
+        for byte in range(0,len(Diag_Service),2):
+            self.fo.write("%s,"%('0x'+Diag_Service[byte:byte+2]))
+        self.fo.write("]")
+        self.fo.write("\n    canObj.dgn.diagnostic_alltypes(datalist)\n")
+        self.fo.write("\n    time.sleep(1)\n" )
+        #-------------------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>GET ACTUAL RESULT
+        self.fo.write("\n    Actual_res = GetActualResponseFrames()\n")
+        self.fo.write("\n    print 'Actual='+str(len(Actual_res)) \n" )
 
-            self.fo.write("    #######################################\n")  #Print row number of excel sheet
-            self.fo.write("    #Code block generated for row no = %s  #\n" %self.writerow_number)
-            self.fo.write("    ##################################### #\n\n")
 
-            self.fo.write("    ################################\n")  # Reset By Diagnostics
-            self.fo.write("    ## Reset By Diagnostics  ##\n")
-            self.fo.write("    ################################\n\n")
+        if(self.get_expectedresult(testcasenumber, teststepnumber).find('XX')>=0 or self.get_expectedresult(testcasenumber, teststepnumber).find("xx")>=0):
+            self.fo.write("\n    Actual_res = GetActualResponseFrames()\n")
+            self.fo.write("\n    count=0")
+            self.fo.write("\n    ret=0")
+            self.fo.write("\n    for expec_letter in Expec_res:")
+            self.fo.write("\n        if(expec_letter=='X' or expec_letter=='x'):")
+            self.fo.write("\n            count+=1")
+            self.fo.write("\n            break")
+            self.fo.write("\n        elif(expec_letter==Actual_res[count]):")
+            self.fo.write("\n            count+=1")
+            self.fo.write("\n            ret*=1")
+            self.fo.write("\n        else:")
+            self.fo.write("\n            count+=1")
+            self.fo.write("\n            ret*=0")
+            self.fo.write("\n    print 'Performed Test on specific byte '")
+            self.fo.write("\n    if(ret==1):")
+            self.fo.write("\n        print 'Test Successful'")
+            self.fo.write("\n        test_step_Result = True")
+            self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n    else:")
+            self.fo.write("\n        print 'Test Failed'")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Test Fails.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_res,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string))
 
-            TD = test_step_Desc.replace('\n',' ')
-            TD = TD.replace('\'','\"')
+        elif(self.get_expectedresult(testcasenumber, teststepnumber).find("SEARCH_DTC")>=0 ):
+            self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
+            funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
+            funct_name = funct_name.split(':')[1]
+            funct_name = funct_name.replace('"','')
+            self.fo.write("\n    if(Actual_res[0:2]!='7F'):")
+            self.fo.write("\n        ret=%s(canObj, Actual_res)"%funct_name)
+            self.fo.write("\n    else:")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Test Fails.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n        ret=0")
+            self.fo.write("\n    if(ret==1):")
+            self.fo.write("\n        test_step_Result = True")
+            self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n    else:")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Test Fails.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_res,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string))
 
-            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
-            self.fo.write("    test_step_Result = False\n" )
-            self.fo.write(r"    test_step_Comment = '\n'" )
-            self.fo.write("\n")
-            self.fo.write(r"    test_step_ResponseStr = '\n'" )
-            self.fo.write("\n")
-            self.fo.write("\n")
-
-            self.fo.write("    canObj.dgn.ecu_reset(%s)\n" % ('0x'+PID))
-            self.fo.write("    time.sleep(1)\n" )
-
-            if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
-                self.fo.write("\n")
-                self.fo.write("    Expec_res = '%s'\n"%Expec_res)
-                self.fo.write("    Actual_res = GetActualResponseFrames()\n")
-                self.fo.write("\n")
-                self.fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                self.fo.write("          test_step_Result = True\n")
-                self.fo.write("          test_step_Comment ='Reset Successful.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-    #self.fo.write("\n%d" %self.writerow_number)
-                self.fo.write("    else: \n" )
-                self.fo.write("          test_step_Result = False\n")
-                self.fo.write("          test_step_Comment ='Unable to reset.Test Fails:!!'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n")
-                self.fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
-                self.fo.write("\n")
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string))#Report
+        elif(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")>0 ):#if string found
+            self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
+            funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
+            funct_name = funct_name.split(':')[1]
+            funct_name = funct_name.replace('"','')
+            self.fo.write("\n    if(Actual_res[0:2]!='7F'):")
+            self.fo.write("\n        ret=%s(Actual_res)"%funct_name)
+            self.fo.write("\n    else:")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Test Fails.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n        ret=0")
+            self.fo.write("\n    if(ret==1):")
+            self.fo.write("\n        test_step_Result = True")
+            self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n    else:")
+            self.fo.write("\n        test_step_Result = False")
+            self.fo.write("\n        test_step_Comment ='Test Fails.'")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_res,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string))
+        elif(self.get_expectedresult(testcasenumber, teststepnumber).find("MAX")>0):
+            Expec_res_raw   = self.get_expectedresult(testcasenumber,teststepnumber)     #Expected value of Test Step
+            if(Expec_res_raw.split('\n')[0].find("MAX")>0):
+                exp_res_max=Expec_res_raw.split('\n')[0]
+                exp_res_min=Expec_res_raw.split('\n')[1]
             else:
-                self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
-                funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
-                funct_name = funct_name.split(':')[1]
-                funct_name = funct_name.replace('"','')
-                self.fo.write("\n    Actual_resp=GetActualResponseFrames()")
-                self.fo.write("\n    if(Actual_resp[0:2]!='7F'):")
-                self.fo.write("\n        ret=%s(Actual_resp)"%funct_name)
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n        ret=0")
-                self.fo.write("\n    if(ret==1):")
-                self.fo.write("\n        test_step_Result = True")
-                self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-
-        elif Diag_Service[0:2]=='31': # Check for diagnostic service ID is "ROUTINE ID"
-
-            PID = Diag_Service[2:4]          #Extract PID Number
-
-
-
-            self.fo.write("\n    #######################################")  #Print row number of excel sheet
-            self.fo.write("\n    #Code block generated for row no = %s  #"%print_row)
-            self.fo.write("\n    ##################################### #\n")
-
-            self.fo.write("\n    ################################\n")  #Read DID By Diagnostics
-            self.fo.write("    ##          ROUTINES          ##\n")
-            self.fo.write("    ################################\n")
-
-            TD = test_step_Desc.replace('\n',' ')
-            TD = TD.replace('\'','\"')
-
-            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
-            self.fo.write("    test_step_Result = False\n" )
-            self.fo.write(r"    test_step_Comment = '\n'" )
+                exp_res_max=Expec_res_raw.split('\n')[1]
+                exp_res_min=Expec_res_raw.split('\n')[0]
+            self.fo.write("\n    exp_res_max='%s'"%exp_res_max)
+            self.fo.write("\n    exp_res_min='%s'"%exp_res_min)
+            self.fo.write("\n    print 'min_max checking'")
+            self.fo.write("\n    ret=min_max_direct(exp_res_min,exp_res_max,Actual_res)")
+            self.fo.write("\n    if(ret==1):")
+            self.fo.write("\n        print 'TEST_SUCCESS'")
+            self.fo.write("\n        test_step_Comment ='Test Successful.'\n")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("\n    else:")
+            self.fo.write("\n        print 'TEST_FAILED'")
+            self.fo.write("\n        print 'Actual='+str(len(Actual_res)) \n" )
+            self.fo.write("\n        print 'expected='+Expec_res \n" )
+            self.fo.write("\n        test_step_Result = False\n")
+            self.fo.write("\n        test_step_Comment ='Test Fails!!'\n")
+            self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+        else:
             self.fo.write("\n")
-            self.fo.write(r"    test_step_ResponseStr = '\n'" )
-            self.fo.write("\n")
-            self.fo.write("\n")
-
-            if(PID == ''):
-                self.fo.write("    canObj.dgn.iso.net.send_request([0x31, ], 'PHYSICAL')\n")
-
-            else:
-                self.fo.write("    canObj.dgn.iso.net.send_request([0x31")
-
-                for i in range(2,len(Diag_Service),2):
-                    self.fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
-
-                self.fo.write("], 'PHYSICAL') \n")
-
-            self.fo.write("    time.sleep(1)\n" )
-            self.fo.write("\n")
-            if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
-                self.fo.write("    Expec_res = '%s'\n"%Expec_res)
-                self.fo.write("    Actual_res = GetActualResponseFrames()\n")
-                self.fo.write("\n")
-                self.fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                self.fo.write("          test_step_Result = True\n")
-                self.fo.write("          test_step_Comment ='Routine Execution Succesful.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("    else: \n" )
-                self.fo.write("          test_step_Result = False\n")
-                self.fo.write("          test_step_Comment ='Routine Execution Fails:!!'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n")
-                self.fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
-                self.fo.write("\n")
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-            else:
-                self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
-                funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
-                funct_name = funct_name.split(':')[1]
-                funct_name = funct_name.replace('"','')
-                self.fo.write("\n    Actual_resp=GetActualResponseFrames()")
-                self.fo.write("\n    if(Actual_resp[0:2]!='7F'):")
-                self.fo.write("\n        ret=%s(Actual_resp)"%funct_name)
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n        ret=0")
-                self.fo.write("\n    if(ret==1):")
-                self.fo.write("\n        test_step_Result = True")
-                self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-
-        elif Diag_Service[0:2]=='22': # Check for diagnostic service ID is "READ DID"
-
-            PID='0x'+Diag_Service[2:6] #Extract PID Number
-
-
-
-            if len(Diag_Service) > 6:
-                Extra_Parameter = '0x'+Diag_Service[6:8]
-
-            self.fo.write("\n    #######################################")  #Print row number of excel sheet
-            self.fo.write("\n    #Code block generated for row no = %s  #"%print_row)
-            self.fo.write("\n    ##################################### #\n")
-
-            self.fo.write("\n    ################################\n")  #Read DID By Diagnostics
-            self.fo.write("    ##          Read DID          ##\n")
-            self.fo.write("    ################################\n")
-
-            TD = test_step_Desc.replace('\n',' ')
-            TD = TD.replace('\'','\"')
-
-            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
-            self.fo.write("    test_step_Result = False\n" )
-            self.fo.write(r"    test_step_Comment = '\n'" )
-            self.fo.write("\n")
-            self.fo.write(r"    test_step_ResponseStr = '\n'" )
-            self.fo.write("\n")
-            self.fo.write("\n")
-
-            if len(Diag_Service) > 6:
-                self.fo.write("    canObj.dgn.read_DID_Len_W(%s,%s) \n" % (PID,Extra_Parameter))
-            else:
-                self.fo.write("    canObj.dgn.read_did(%s) \n" % (PID))
-            self.fo.write("    time.sleep(0.3)\n" )
-            self.fo.write("\n")
-            if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
-                self.fo.write("    Expec_res = '%s'\n"%Expec_res)
-                self.fo.write("    Actual_res = GetActualResponseFrames()\n")
-                self.fo.write("\n")
-                self.fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                self.fo.write("          test_step_Result = True\n")
-                self.fo.write("          test_step_Comment ='Test Successful.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("    else: \n" )
-                self.fo.write("          test_step_Result = False\n")
-                self.fo.write("          test_step_Comment ='Test Fails!!'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-
-            else:
-                self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
-                funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
-                funct_name = funct_name.split(':')[1]
-                funct_name = funct_name.replace('"','')
-                self.fo.write("\n    Actual_resp=GetActualResponseFrames()")
-                self.fo.write("\n    if(Actual_resp[0:2]!='7F'):")
-                self.fo.write("\n        ret=%s(Actual_resp)"%funct_name)
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n        ret=0")
-                self.fo.write("\n    if(ret==1):")
-                self.fo.write("\n        test_step_Result = True")
-                self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-
-        elif Diag_Service[0:2]=='10': # Check for diagnostic service ID is "Session CTRL DID"
-
-            PID=Diag_Service[2:4] #Extract Session Number
-
-
-
-            self.fo.write("\n    #######################################")  #Print row number of excel sheet
-            self.fo.write("\n    #Code block generated for row no = %s  #"%print_row)
-            self.fo.write("\n    ##################################### #\n")
-
-            self.fo.write("\n    ################################\n")  #Session Ctrl By Diagnostics
-            self.fo.write("    ##          Session Ctrl  #\n")
-            self.fo.write("    ################################\n")
-
-            TD = test_step_Desc.replace('\n',' ')
-            TD = TD.replace('\'','\"')
-
-            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
-            self.fo.write("    test_step_Result = False\n" )
-            self.fo.write(r"    test_step_Comment = '\n'" )
-            self.fo.write("\n")
-            self.fo.write(r"    test_step_ResponseStr = '\n'" )
-            self.fo.write("\n")
-            self.fo.write("\n")
-
-            if(len(Diag_Service) <= 4):
-                if PID =='01':
-                    self.fo.write("    canObj.dgn.default_session() \n") #evaluation of default session
-                elif PID =='02':
-                    self.fo.write("    canObj.dgn.programming_session() \n") #evaluation of programming session
-                elif PID =='03':
-                    self.fo.write("    canObj.dgn.extended_session() \n") #evaluation of extended session
-                elif PID =='':
-                    self.fo.write("    canObj.dgn.iso.net.send_request([0x10, ], 'PHYSICAL') \n") #evaluation of No session subfunction
-                else :
-                    self.fo.write("    canObj.dgn.iso.service_0x10(%s)\n" % ('0x'+PID)) #evaluation of internal session
-            else:
-                self.fo.write("    canObj.dgn.iso.net.send_request([0x10")
-
-                for i in range(2,len(Diag_Service),2):
-                    self.fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
-
-                self.fo.write("], 'PHYSICAL') \n")
-
-            if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
-                self.fo.write("    time.sleep(0.3)\n" )
-                self.fo.write("\n")
-                self.fo.write("    Expec_res = '%s'\n"%Expec_res)
-                self.fo.write("    Actual_res = GetActualResponseFrames()\n")
-                self.fo.write("\n")
-                self.fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                self.fo.write("          test_step_Result = True\n")
-                self.fo.write("          test_step_Comment ='Test Successful.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("    else: \n" )
-                self.fo.write("          test_step_Result = False\n")
-                self.fo.write("          test_step_Comment ='Test Failed!!'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n")
-                self.fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
-                self.fo.write("\n")
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-            else:
-                self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
-                funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
-                funct_name = funct_name.split(':')[1]
-                funct_name = funct_name.replace('"','')
-                self.fo.write("\n    Actual_resp=GetActualResponseFrames()")
-                self.fo.write("\n    if(Actual_resp[0:2]!='7F'):")
-                self.fo.write("\n        ret=%s(Actual_resp)"%funct_name)
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n        ret=0")
-                self.fo.write("\n    if(ret==1):")
-                self.fo.write("\n        test_step_Result = True")
-                self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-
-        elif Diag_Service[0:2]=='27': # Check for diagnostic service ID is "Security Access ID"
-
-            PID=Diag_Service[2:4] #Extract Session Number
-
-
-
-            self.fo.write("\n    #######################################")  #Print row number of excel sheet
-            self.fo.write("\n    #Code block generated for row no = %s  #"%print_row)
-            self.fo.write("\n    ##################################### #\n")
-
-            self.fo.write("\n    ################################\n")  #Security Access By Diagnostics
-            self.fo.write("    ##          Security Access  #\n")
-            self.fo.write("    ################################\n")
-
-            TD = test_step_Desc.replace('\n',' ')
-            TD = TD.replace('\'','\"')
-
-            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
-            self.fo.write("    test_step_Result = False\n" )
-            self.fo.write(r"    test_step_Comment = '\n'" )
-            self.fo.write("\n")
-            self.fo.write(r"    test_step_ResponseStr = '\n'" )
-            self.fo.write("\n")
-            self.fo.write("\n")
-
-            if ("Send" in TD) and ("Wrong" in TD) and ("Key" in TD):
-                self.fo.write("    canObj.dgn.security_access_wrong_key(%s)\n" % ('0x'+PID))
-            else:
-                self.fo.write("    canObj.dgn.security_access(%s)\n" % ('0x'+PID))
-            if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
-                self.fo.write("\n")
-                self.fo.write("    Expec_res = '%s'\n"%Expec_res)
-                self.fo.write("    Actual_res = GetActualResponseFrames()\n")
-                self.fo.write("\n")
-                self.fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                self.fo.write("          test_step_Result = True\n")
-                self.fo.write("          test_step_Comment ='Test Successful.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("    else: \n" )
-                self.fo.write("          test_step_Result = False\n")
-                self.fo.write("          test_step_Comment ='Test Failed!!'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n")
-                self.fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
-                self.fo.write("\n")
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-            else:
-                self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
-                funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
-                funct_name = funct_name.split(':')[1]
-                funct_name = funct_name.replace('"','')
-                self.fo.write("\n    Actual_resp=GetActualResponseFrames()")
-                self.fo.write("\n    if(Actual_resp[0:2]!='7F'):")
-                self.fo.write("\n        ret=%s(Actual_resp)"%funct_name)
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n        ret=0")
-                self.fo.write("\n    if(ret==1):")
-                self.fo.write("\n        test_step_Result = True")
-                self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-
-        elif Diag_Service[0:2]=='19': # Check for diagnostic service ID is "READ DTC Information"
-
-            PID=Diag_Service[2:4] #Extract PID Number
-
-
-            self.fo.write("\n    #######################################")  #Print row number of excel sheet
-            self.fo.write("\n    #Code block generated for row no = %s  #"%print_row)
-            self.fo.write("\n    ##################################### #\n")
-
-            self.fo.write("\n    ################################\n")  #READ DTC Information
-            self.fo.write("    ##    READ DTC Information    ##\n")
-            self.fo.write("    ################################\n")
-
-            TD = test_step_Desc.replace('\n',' ')
-            TD = TD.replace('\'','\"')
-
-            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
-            self.fo.write("    test_step_Result = False\n" )
-            self.fo.write(r"    test_step_Comment = '\n'" )
-            self.fo.write("\n")
-            self.fo.write(r"    test_step_ResponseStr = '\n'" )
-            self.fo.write("\n")
-            self.fo.write("\n")
-
-            if(PID == ''):
-                self.fo.write("    canObj.dgn.iso.net.send_request([0x19, ], 'PHYSICAL')\n")
-            else:
-                self.fo.write("    canObj.dgn.iso.net.send_request([0x19")
-
-                for i in range(2,len(Diag_Service),2):
-                    self.fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
-
-                self.fo.write("], 'PHYSICAL') \n")
-
-            self.fo.write("    time.sleep(1)\n" )
-            self.fo.write("\n")
-            if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
-                self.fo.write("    Expec_res = '%s'\n"%Expec_res)
-                self.fo.write("    Actual_res = GetActualResponseFrames()\n")
-                self.fo.write("\n")
-                self.fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                self.fo.write("          test_step_Result = True\n")
-                self.fo.write("          test_step_Comment ='Read DTC Successful.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("    else: \n" )
-                self.fo.write("          test_step_Result = False\n")
-                self.fo.write("          test_step_Comment ='Read DTC Failed!!'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n")
-                self.fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
-                self.fo.write("\n")
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-            else:
-                self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
-                funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
-                funct_name = funct_name.split(':')[1]
-                funct_name = funct_name.replace('"','')
-                self.fo.write("\n    Actual_resp=GetActualResponseFrames()")
-                self.fo.write("\n    if(Actual_resp[0:2]!='7F'):")
-                self.fo.write("\n        ret=%s(Actual_resp)"%funct_name)
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n        ret=0")
-                self.fo.write("\n    if(ret==1):")
-                self.fo.write("\n        test_step_Result = True")
-                self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-
-        elif Diag_Service[0:2]=='2E': # Check for diagnostic service ID is "write DID"
-
-            self.fo.write("\n    #######################################")  #Print row number of excel sheet
-            self.fo.write("\n    #Code block generated for row no = %s  #"%print_row)
-            self.fo.write("\n    ##################################### #\n")
-
-            self.fo.write("\n    ################################\n")  #Hard Reset By Diagnostics
-            self.fo.write("    ##          Write DID          #\n")
-            self.fo.write("    ################################\n")
-
-        elif Diag_Service[0:2]=='85': # Check for diagnostic service ID is "Control DTC Setting"
-
-            PID = Diag_Service[2:4] #Extract Subfunction
-
-
-            self.fo.write("\n    #######################################")  #Print row number of excel sheet
-            self.fo.write("\n    #Code block generated for row no = %s  #"%print_row)
-            self.fo.write("\n    ##################################### #\n")
-
-            self.fo.write("\n    ###################################\n")  #Clear Diagnosice Information
-            self.fo.write("    ##       Control DTC Setting      ##\n")
-            self.fo.write("    ###################################\n")
-
-            TD = test_step_Desc.replace('\n',' ')
-            TD = TD.replace('\'','\"')
-
-            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
-            self.fo.write("    test_step_Result = False\n" )
-            self.fo.write(r"    test_step_Comment = '\n'" )
-            self.fo.write("\n")
-            self.fo.write(r"    test_step_ResponseStr = '\n'" )
-            self.fo.write("\n")
-            self.fo.write("\n")
-
-            if(len(Diag_Service) <= 4):
-                if(PID == ''):
-                    self.fo.write("    canObj.dgn.iso.net.send_request([0x85, ], 'PHYSICAL')\n")
-                else:
-                    self.fo.write("    canObj.dgn.control_dtc_setting_custom(%s)\n" % ('0x'+PID))
-            else:
-                self.fo.write("    canObj.dgn.iso.net.send_request([0x85")
-
-                for i in range(2,len(Diag_Service),2):
-                    self.fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
-
-                self.fo.write("], 'PHYSICAL') \n")
-
-
-            self.fo.write("    time.sleep(1)\n" )
-            self.fo.write("\n")
-            if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
-                self.fo.write("    Expec_res = '%s'\n"%Expec_res)
-                self.fo.write("    Actual_res = GetActualResponseFrames()\n")
-                self.fo.write("\n")
-                self.fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                self.fo.write("          test_step_Result = True\n")
-                self.fo.write("          test_step_Comment ='Test Successful.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("    else: \n" )
-                self.fo.write("          test_step_Result = False\n")
-                self.fo.write("          test_step_Comment ='Test Failed.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n")
-                self.fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
-                self.fo.write("\n")
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-            else:
-                self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
-                funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
-                funct_name = funct_name.split(':')[1]
-                funct_name = funct_name.replace('"','')
-                self.fo.write("\n    Actual_resp=GetActualResponseFrames()")
-                self.fo.write("\n    if(Actual_resp[0:2]!='7F'):")
-                self.fo.write("\n        ret=%s(Actual_resp)"%funct_name)
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n        ret=0")
-                self.fo.write("\n    if(ret==1):")
-                self.fo.write("\n        test_step_Result = True")
-                self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-
-        elif Diag_Service[0:2]=='14': # Check for diagnostic service ID is "Clear Diagnosice Information"
-
-            PID = Diag_Service[2:4] #Extract Subfunction
-
-            self.fo.write("\n    #######################################")  #Print row number of excel sheet
-            self.fo.write("\n    #Code block generated for row no = %s  #"%print_row)
-            self.fo.write("\n    ##################################### #\n")
-
-            self.fo.write("\n    ###################################\n")  #Clear Diagnosice Information
-            self.fo.write("    ## Clear Diagnostics Information  ##\n")
-            self.fo.write("    ###################################\n")
-
-            TD = test_step_Desc.replace('\n',' ')
-            TD = TD.replace('\'','\"')
-
-            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
-            self.fo.write("    test_step_Result = False\n" )
-            self.fo.write(r"    test_step_Comment = '\n'" )
-            self.fo.write("\n")
-            self.fo.write(r"    test_step_ResponseStr = '\n'" )
-            self.fo.write("\n")
-            self.fo.write("\n")
-
-            if(PID == ''):
-                self.fo.write("    canObj.dgn.iso.net.send_request([0x14, ], 'PHYSICAL')\n")
-            else:
-                self.fo.write("    canObj.dgn.iso.net.send_request([0x14")
-
-                for i in range(2,len(Diag_Service),2):
-                    self.fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
-
-                self.fo.write("], 'PHYSICAL') \n")
-
-
-            self.fo.write("    time.sleep(1)\n" )
-            self.fo.write("\n")
-            if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
-
-                self.fo.write("    Expec_res = '%s'\n"%Expec_res)
-                self.fo.write("    Actual_res = GetActualResponseFrames()\n")
-                self.fo.write("\n")
-                self.fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                self.fo.write("          test_step_Result = True\n")
-                self.fo.write("          test_step_Comment ='Test Successful.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("    else: \n" )
-                self.fo.write("          test_step_Result = False\n")
-                self.fo.write("          test_step_Comment ='Test Failed.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n")
-                self.fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
-                self.fo.write("\n")
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-            else:
-                self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
-                funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
-                funct_name = funct_name.split(':')[1]
-                funct_name = funct_name.replace('"','')
-                self.fo.write("\n    Actual_resp=GetActualResponseFrames()")
-                self.fo.write("\n    if(Actual_resp[0:2]!='7F'):")
-                self.fo.write("\n        ret=%s(Actual_resp)"%funct_name)
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n        ret=0")
-                self.fo.write("\n    if(ret==1):")
-                self.fo.write("\n        test_step_Result = True")
-                self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-#
-
-        elif Diag_Service[0:2]=='3E': # Check for diagnostic service ID is "Tester Present"
-
-            PID=Diag_Service[2:4] #Extract PID Number
-
-            self.fo.write("\n    #######################################")  #Print row number of excel sheet
-            self.fo.write("\n    #Code block generated for row no = %s  #"%print_row)
-            self.fo.write("\n    ##################################### #\n")
-
-            self.fo.write("\n    ###################################\n")  #Tester Present
-            self.fo.write("    ##         Tester Present         ##\n")
-            self.fo.write("    ###################################\n")
-
-            TD = test_step_Desc.replace('\n',' ')
-            TD = TD.replace('\'','\"')
-
-            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
-            self.fo.write("    test_step_Result = False\n" )
-            self.fo.write(r"    test_step_Comment = '\n'" )
-            self.fo.write("\n")
-            self.fo.write(r"    test_step_ResponseStr = '\n'" )
-            self.fo.write("\n")
-            self.fo.write("\n")
-
-
-            if(len(Diag_Service) <= 4):
-                if(PID == '00'):
-                    self.fo.write("    canObj.dgn.tester_present()\n")
-                elif(PID == '80'):
-                    self.fo.write("    canObj.dgn.tester_present_spr()\n")
-                elif(PID == ''):
-                    self.fo.write("    canObj.dgn.iso.net.send_request([0x3E, ], 'PHYSICAL')\n")
-                else:
-                    self.fo.write("    canObj.dgn.tester_present_custom(%s)\n" % ('0x'+PID))
-            else:
-                self.fo.write("    canObj.dgn.iso.net.send_request([0x3E")
-
-                for i in range(2,len(Diag_Service),2):
-                    self.fo.write(" ,%s" % ('0x'+ Diag_Service[i:i+2])) #Invalid Length
-
-                self.fo.write("], 'PHYSICAL') \n")
-
-
-            self.fo.write("    time.sleep(1)\n" )
-            self.fo.write("\n")
-            if(self.get_expectedresult(testcasenumber, teststepnumber).find("FUNC")<0 ):#if string not found
-                self.fo.write("    Expec_res = '%s'\n"%Expec_res)
-                self.fo.write("    Actual_res = GetActualResponseFrames()\n")
-                self.fo.write("\n")
-                self.fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
-                self.fo.write("          test_step_Result = True\n")
-                self.fo.write("          test_step_Comment ='Test Successful.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("    else: \n" )
-                self.fo.write("          test_step_Result = False\n")
-                self.fo.write("          test_step_Comment ='Test Failed.'\n")
-                self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n")
-                self.fo.write("    test_step_ResponseStr = canObj.dgn.req_info_raw()\n")
-                self.fo.write("\n")
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
-            else:
-                self.fo.write("\n    #refer to extra.py in the TEstsuite for the function def\n")
-                funct_name=self.get_expectedresult(testcasenumber, teststepnumber)
-                funct_name = funct_name.split(':')[1]
-                funct_name = funct_name.replace('"','')
-                self.fo.write("\n    Actual_resp=GetActualResponseFrames()")
-                self.fo.write("\n    if(Actual_resp[0:2]!='7F'):")
-                self.fo.write("\n        ret=%s(Actual_resp)"%funct_name)
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n        ret=0")
-                self.fo.write("\n    if(ret==1):")
-                self.fo.write("\n        test_step_Result = True")
-                self.fo.write("\n        test_step_Comment ='Test Sucessful.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write("\n    else:")
-                self.fo.write("\n        test_step_Result = False")
-                self.fo.write("\n        test_step_Comment ='Test Fails.'")
-                self.fo.write("\n        xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
-                self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, Actual_resp,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string)) #Report
+            self.fo.write("    if Expec_res == Actual_res[0:len(Expec_res)]: \n" )
+            self.fo.write("          test_step_Result = True\n")
+            self.fo.write("          test_step_Comment ='Test Successful.'\n")
+            self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("    elif(Expec_res=='NONE'): \n" )
+            self.fo.write("          if(len(Actual_res)<2):\n" )
+            self.fo.write("              test_step_Comment ='Test Successful.'\n")
+            self.fo.write("              xl_sheet.cell(row=%s,column=%s,value='OK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write("    else: \n" )
+            self.fo.write("          print 'Actual='+str(len(Actual_res)) \n" )
+            self.fo.write("          print 'expected='+Expec_res \n" )
+            self.fo.write("          test_step_Result = False\n")
+            self.fo.write("          test_step_Comment ='Test Fails!!'\n")
+            self.fo.write("          xl_sheet.cell(row=%s,column=%s,value='NOK')\n"%(self.writerow_number,self.testResCol))
+            self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string))
         self.fo.write("\n    xl_response(%s,%s)\n"%(self.writerow_number,self.actResCol))
+        self.fo.write("\n    xl_report.save(r'%s'+'/'+'result.xlsx')\n"%self.workBookPath)
+
+
+#-------------------------process DIAG_EVAL FOR special handling------------------------------------#
+    def processTypeDIAG_EVAL(self,testcasenumber,teststepnumber):
+        self.fo.write("    #######################################\n")  #Print row number of excel sheet
+        self.fo.write("    #Code block generated for row no = %s  #\n" %self.writerow_number)
+        self.fo.write("    ##################################### #\n\n")
 
 
 #------------------------------ Process POPUP type test steps ---------------------------------------#
@@ -1284,134 +890,132 @@ class Testsuite:
         self.fo.write("\n")
         self.fo.write("\n")
 
-#------------------------------ Process CANSIGNAL type test steps ---------------------------------------#
-    def processTypeCANSIGNAL(self,testcasenumber, teststepnumber):
-        #Extract values from excel sheet
-        print_row = str(self.writerow_number)
-        test_step_Desc = self.get_teststepdescription(testcasenumber, teststepnumber) #Description
+#------------------------------ Process CANSTART type test steps ---------------------------------------#
+    def processTypeCANSTART(self,testcasenumber,teststepnumber):
+        self.fo.write("    #######################################\n")  #Print row number of excel sheet
+        self.fo.write("    #Code block generated for row no = %s #\n" %self.writerow_number)
+        self.fo.write("    #######################################\n\n")
+
+        self.fo.write("    ################################\n")  # Reset By Diagnostics
+        self.fo.write("    ## CAN_START SWITCHING      ##\n")
+        self.fo.write("    ################################\n\n")
+
+        self.fo.write("\n    canObj.start_frame_reception()" )
+        self.fo.write("\n    print 'CAN_START -->> CAN_TX_RX ON'\n\n")
+
+
+#------------------------------ Process CANSTOP type test steps ---------------------------------------#
+    def processTypeCANSTOP(self,testcasenumber,teststepnumber):
+        self.fo.write("    #######################################\n")  #Print row number of excel sheet
+        self.fo.write("    #Code block generated for row no = %s #\n" %self.writerow_number)
+        self.fo.write("    #######################################\n\n")
+
+        self.fo.write("    ################################\n")  # Reset By Diagnostics
+        self.fo.write("    ## CAN_STOP SWITCHING      ##\n")
+        self.fo.write("    ################################\n\n")
+
+        self.fo.write("\n    canObj.stop_frame_reception()" )
+        self.fo.write("\n    print 'CAN_STOP -->> CAN_TX_RX OFF'\n\n")
+
+
+#------------------------------ Process READ_CAN------------ ---------------------------------------#
+    def processTypeRX_CAN(self,testcasenumber,teststepnumber):
+        test_step_Desc  = self.get_teststepdescription(testcasenumber, teststepnumber)#Description
         Comments_string = self.get_comments(testcasenumber, teststepnumber) #Comments
+        Comments_string = Comments_string.replace('\n',' ')
+        Expec_res_raw   = self.get_expectedresult(testcasenumber,teststepnumber)     #Expected value of Test Step
+        Expec_res_raw  = Expec_res_raw.replace('\n',' ')
+        Expec_res_raw   = Expec_res_raw.split('.')[0]
+        Expec_res  = Expec_res_raw
+        Expec_res  = Expec_res.replace('\n',' ')
+        Expec_res  = Expec_res.replace(' ','')
+        Expec_res  = Expec_res.upper()
+
+        Diag_Service=self.get_testconditions(testcasenumber, teststepnumber)
+        Diag_Service=Diag_Service.split('.')[0]
+        Diag_Service = Diag_Service.replace(" ", "")
+
+        TD = test_step_Desc.replace('\n',' ')
+        TD = TD.replace('\'','\"')
 
 
-        Can_Signal_Details=self.get_testconditions(testcasenumber, teststepnumber)
-        #Can_Signal_Details=Can_Signal_Details.split('.')[0]
-        Can_Signal_Details=Can_Signal_Details.replace('\n',' ')
-
-        Test_Condition = Can_Signal_Details
-        Can_Signal_Details=Can_Signal_Details.replace(' ','')
-
-
-        Can_Signal_Value_Str = Can_Signal_Details.split('=')[1]
-        Can_Signal_Details = Can_Signal_Details.split('=')[0]
-        Can_Message=Can_Signal_Details.split('.')[0]
-        Can_Signal=Can_Signal_Details.split('.')[1]
-
-        Can_Signal_Value_List = []
-
-        for listIndex in xrange(0,len(Can_Signal_Value_Str),2):
-            byteStr = ''
-            for i in range(2):
-                byteStr = byteStr + Can_Signal_Value_Str[listIndex + i]
-
-            byteHex_str = '0x'+ byteStr
-            Can_Signal_Value_List.append(byteHex_str)
-
-        Expec_res = str(Can_Signal_Value_Str.upper())
-
-        if Expec_res[0] == '0' and Expec_res[1] != '0' and len(Can_Signal_Value_Str)>1:
-            Expec_res = Expec_res[1:]
-        elif Expec_res == '00' or Expec_res == '000' or Expec_res == '0000':
-            Expec_res = '0'
+        self.fo.write("\n")
+        self.fo.write("    #######################################\n")  #Print row number of excel sheet
+        self.fo.write("    #Code block generated for row no = %s  #\n" %self.writerow_number)
+        self.fo.write("    ##################################### #\n\n")
+        self.fo.write("    ################################\n")  # Reset By Diagnostics
+        self.fo.write("    #---------READ_CAN VALUE OF SGN=%s-----------#\n"%str(self.get_testconditions(testcasenumber,teststepnumber)))
+        self.fo.write("    ################################\n\n")
+        self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+        self.fo.write("    test_step_Result = False\n" )
+        self.fo.write(r"    test_step_Comment = '\n'" )
+        self.fo.write("\n    Expec_res = '%s'\n"%Expec_res)
+        self.fo.write("\n")
+        self.fo.write(r"    test_step_ResponseStr = '\n'" )
 
 
-        if Can_Message != '' and Can_Signal != '' and Can_Signal_Value_Str != '':
-            self.fo.write("\n    ################################\n")
-            self.fo.write("    ##          Send CAN signal  #\n")
-            self.fo.write("    ################################\n")
+        self.writeRX_CANcode(testcasenumber, teststepnumber)
+        self.fo.write(r"report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string))#
 
-            TD = test_step_Desc.replace('\n',' ')
-            TD = TD.replace('\'','\"')
 
-            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
-            self.fo.write("    test_step_Result = False\n" )
-            self.fo.write(r"    test_step_Comment = '\n'" )
-            self.fo.write("\n")
-            self.fo.write(r"    test_step_ResponseStr = '\n'" )
-            self.fo.write("\n")
-            self.fo.write("\n")
-            self.fo.write("    canObj.send_cyclic_frame('%s',10) \n" %(Can_Message))
-            #self.fo.write("    canObj.set_signal('%s',%s) \n" %(int(1),Can_Signal,Can_Signal_Value))
+#------------------------------ Process TX_CAN------------ ---------------------------------------#
+    def processTypeTX_CAN(self,testcasenumber,teststepnumber):
+        test_step_Desc  = self.get_teststepdescription(testcasenumber, teststepnumber)#Description
+        Comments_string = self.get_comments(testcasenumber, teststepnumber) #Comments
+        Comments_string = Comments_string.replace('\n',' ')
+        Expec_res_raw   = self.get_expectedresult(testcasenumber,teststepnumber)     #Expected value of Test Step
+        Expec_res_raw  = Expec_res_raw.replace('\n',' ')
+        Expec_res_raw   = Expec_res_raw.split('.')[0]
+        Expec_res  = Expec_res_raw
+        Expec_res  = Expec_res.replace('\n',' ')
+        Expec_res  = Expec_res.replace(' ','')
+        Expec_res  = Expec_res.upper()
 
-            self.fo.write("    canObj.set_signal('%s',[" %(Can_Signal))
-            for i in range(len(Can_Signal_Value_List)):
-                if i == (len(Can_Signal_Value_List)-1):
-                    self.fo.write("%s" %Can_Signal_Value_List[i])
-                else:
-                    self.fo.write("%s," %Can_Signal_Value_List[i])
+        Diag_Service=self.get_testconditions(testcasenumber, teststepnumber)
+        Diag_Service=Diag_Service.split('.')[0]
+        Diag_Service = Diag_Service.replace(" ", "")
 
-            self.fo.write("]) \n")
-            self.fo.write("    time.sleep(0.5)\n" )
+        TD = test_step_Desc.replace('\n',' ')
+        TD = TD.replace('\'','\"')
 
-            self.fo.write("\n")
-            self.fo.write("    Expec_res = '%s'\n"%Expec_res)
-            self.fo.write("    Actual_res = canObj.get_signal('%s','%s')\n"%(Can_Signal,Can_Message))
-            self.fo.write("    Actual_res = str(hex(Actual_res))\n")
-            self.fo.write("    Actual_res = Actual_res.replace('0x','')\n")
-            self.fo.write("    Actual_res = Actual_res.replace('L','')\n")
-            self.fo.write("    Actual_res = Actual_res.replace(' ','')\n")
-            self.fo.write("    Actual_res = Actual_res.upper()\n")
-            self.fo.write("\n")
 
-            self.fo.write("    if Expec_res == Actual_res: \n" )
-            self.fo.write("          test_step_Result = True\n")
-            self.fo.write("          test_step_Comment ='CAN signal set Successfully.'\n")
-            self.fo.write("    else: \n" )
-            self.fo.write("          test_step_Result = False\n")
-            self.fo.write("          test_step_Comment ='CAN signal could not be set.'\n")
-            self.fo.write("    test_step_ResponseStr = str(canObj.get_frame(canObj.find_frame_id('%s')))\n"%(Can_Message))
-            self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result,'%s.%s='+Actual_res,'%s',test_step_Comment + '\n' + '%s')"%(Can_Message,Can_Signal,Test_Condition,Comments_string)) #Report
-            self.fo.write("\n    print '%s'\n"%self.get_teststepdescription(testcasenumber, teststepnumber))
-        else:
-            print "Test Condition entered is incorrect !!"
+        self.fo.write("\n")
+        self.fo.write("    #######################################\n")  #Print row number of excel sheet
+        self.fo.write("    #Code block generated for row no = %s  #\n" %self.writerow_number)
+        self.fo.write("    ##################################### #\n\n")
+        self.fo.write("    ################################\n")  # Reset By Diagnostics
+        self.fo.write("    #---------TX_CAN VALUE OF SGN=%s-----------#\n"%str(self.get_testconditions(testcasenumber,teststepnumber)))
+        self.fo.write("    ################################\n\n")
+        self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+        self.fo.write("    test_step_Result = False\n" )
+        self.fo.write(r"    test_step_Comment = '\n'" )
+        self.fo.write("\n")
+        self.fo.write(r"    test_step_ResponseStr = '\n'" )
+        self.fo.write("\n    Expec_res = '%s'\n"%Expec_res)
+
+
+        self.writeTX_CANcode(testcasenumber, teststepnumber)
+        self.fo.write(r"report.add_test_step(test_step_Desc,test_step_Result, test_step_ResponseStr,'%s',test_step_Comment + '\n' + '%s')"%(Expec_res_raw,Comments_string))#
 
 
 #------------------------------ Process CANFRAME type test steps ---------------------------------------#
-    def processTypeCANFRAME(self,testcasenumber, teststepnumber):
+    def processTypeSTARTCANCYCLICFRAME(self,testcasenumber, teststepnumber):
         #Extract values from excel sheet
         test_step_Desc = self.get_teststepdescription(testcasenumber, teststepnumber) #Description
-        Comments_string = self.get_comments(testcasenumber, teststepnumber) #Comments
-        Expec_res=self.get_expectedresult(testcasenumber, teststepnumber) #Expected value of Test Step
-
-        Expec_res=Expec_res.split('.')[0]
-        Expec_res=Expec_res.replace('\n',' ')
-        Expec_res=Expec_res.replace(' ','')
-        Expec_res=Expec_res.upper()
 
         Can_Frame_Details=self.get_testconditions(testcasenumber, teststepnumber)
         Can_Frame_Details=Can_Frame_Details.replace('\n',' ')
 
         Test_Condition = Can_Frame_Details
-        Can_Frame_Details=Can_Frame_Details.replace(' ','')
+        Can_FrameName=Can_Frame_Details.replace(' ','')
+        print_row = str(self.writerow_number)
+        self.fo.write("\n    #######################################")  #Print Row number
+        self.fo.write("\n    #Code block generated for row no = %s #"%print_row)
+        self.fo.write("\n    #######################################\n")
 
-        Can_Frame_Value_Str = Can_Frame_Details.split('=')[1]
-        Can_Frame_Details = Can_Frame_Details.split('=')[0]
-        Can_Frame_Details=Can_Frame_Details.split(']')[0]
-        Can_FrameID=Can_Frame_Details.split('[')[1]
-
-
-        Can_Frame_Value_List = []
-
-        for listIndex in xrange(0,len(Can_Frame_Value_Str),2):
-            byteStr = ''
-            for i in range(2):
-                byteStr = byteStr + Can_Frame_Value_Str[listIndex + i]
-
-            byteHex_str = '0x'+ byteStr
-            Can_Frame_Value_List.append(byteHex_str)
-
-
-        if Can_FrameID != '' and Can_Frame_Value_Str != '':
+        if Can_FrameName != '':
             self.fo.write("\n    ################################\n")
-            self.fo.write("    ##          Send CAN Frame  #\n")
+            self.fo.write("    ##          Send START CAN CYCLIC Frame  #\n")
             self.fo.write("    ################################\n")
 
             TD = test_step_Desc.replace('\n',' ')
@@ -1424,29 +1028,61 @@ class Testsuite:
             self.fo.write(r"    test_step_ResponseStr = '\n'" )
             self.fo.write("\n")
             self.fo.write("\n")
-            self.fo.write("    canObj.write_frame(%s, %s, [" %(Can_FrameID,len(Can_Frame_Value_List)))
-            for i in range(len(Can_Frame_Value_List)):
-                if i == (len(Can_Frame_Value_List)-1):
-                    self.fo.write("%s" %Can_Frame_Value_List[i])
-                else:
-                    self.fo.write("%s," %Can_Frame_Value_List[i])
-            self.fo.write("]) \n")
+            self.fo.write("    canObj.send_cyclic_frame('%s')\n" %Can_FrameName)
             self.fo.write("    time.sleep(0.5)\n" )
-            self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result,'%s' + 'Comment' + '\n' + '%s')"%(Test_Condition,Comments_string)) #Report
-            self.fo.write("\n    print '%s'\n"%self.get_teststepdescription(testcasenumber, teststepnumber))
+            self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result,'%s' + 'Comment' + '\n' + '%s')"%(Test_Condition,Can_FrameName)) #Report
+            self.fo.write("\n    print 'Sent CYCLIC CAN Frame %s'\n"%Can_FrameName)
         else:
             print "Test Condition entered is incorrect !!"
+
+
+#------------------------------ Process CANFRAME type test steps ---------------------------------------#
+    def processTypeSTOPCANCYCLICFRAME(self,testcasenumber, teststepnumber):
+        #Extract values from excel sheet
+        test_step_Desc = self.get_teststepdescription(testcasenumber, teststepnumber) #Description
+
+        Can_Frame_Details=self.get_testconditions(testcasenumber, teststepnumber)
+        Can_Frame_Details=Can_Frame_Details.replace('\n',' ')
+
+        Test_Condition = Can_Frame_Details
+        Can_FrameName=Can_Frame_Details.replace(' ','')
+
+
+        if Can_FrameName != '':
+            self.fo.write("\n    ################################\n")
+            self.fo.write("    ##          Send STOP CAN CYCLIC Frame  #\n")
+            self.fo.write("    ################################\n")
+
+            TD = test_step_Desc.replace('\n',' ')
+            TD = TD.replace('\'','\"')
+
+            self.fo.write("    test_step_Desc='%s'\n" %TD)  #Test step Description
+            self.fo.write("    test_step_Result = False\n" )
+            self.fo.write(r"    test_step_Comment = '\n'" )
+            self.fo.write("\n")
+            self.fo.write(r"    test_step_ResponseStr = '\n'" )
+            self.fo.write("\n")
+            self.fo.write("\n")
+            self.fo.write("    canObj.stop_cyclic_frame('%s')\n" %Can_FrameName)
+            self.fo.write("    time.sleep(0.5)\n" )
+            self.fo.write(r"    report.add_test_step(test_step_Desc,test_step_Result,'%s' + 'Comment' + '\n' + '%s')"%(Test_Condition,Can_FrameName)) #Report
+            self.fo.write("\n    print 'Sending CYCLIC CAN Frame %s'\n"%Can_FrameName)
+        else:
+            print "Test Condition entered is incorrect !!"
+
+
+#--------------------------------------------------------------------------------------------------------------#
 
 #-------------------------------------------- Generate EndTest Function ---------------------------------------#
     def writeEndTestDef(self):
         self.fo.write("\n\ndef endTest():")
-        self.fo.write("\n    xl_report.save('%s'+'/'+'result.xlsx')" %self.workBookPath)
+        self.fo.write("\n    xl_report.save(r'%s'+'/'+'result.xlsx')" %self.workBookPath)
         self.fo.write("\n    report.generate_report()")
         self.fo.write("\n    canObj.dgn.iso.net.log_file = report.get_log_dir()")
         self.fo.write("\n    canObj.dgn.save_logfile()")
         self.fo.write("\n    canObj.dgn.stop_periodic_tp()")
         self.fo.write("\n    canObj.stop_cyclic_frame('BCCM_NM51F')")
-        self.fo.write("\n    os.startfile('%s'+'/'+'result.xlsx')" %self.workBookPath)
+        self.fo.write("\n    os.startfile(r'%s'+'/'+'result.xlsx')" %self.workBookPath)
         self.fo.write("\n")
         self.fo.write(r"    print '\nScript Execution Finished !!'")
         self.fo.write("\n")

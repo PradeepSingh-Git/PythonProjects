@@ -19,7 +19,7 @@ set currentpath=%3
 set pythonpath="C:\Python27\python.exe"
 
 set LOG=CONSOLE_LOG.txt
-set WTEE=".\wtee"
+set WTEE="..\..\..\Libs\wtee\wtee"
 
 echo ###############################################################################
 echo Testcase File Name  = %testcaseFileName%
