@@ -18,6 +18,7 @@ import HTML
 import datetime
 import fileinput
 import os
+from openpyxl import *
 
 
 
@@ -376,3 +377,133 @@ class HTMLReport(object):
 
     def get_log_dir(self):
         return (os.getcwd() + '/' + self.reportDir + '/' + self.reportSubDir + '/' + self.reportSubDir + '_logfile.txt')
+
+
+
+
+
+
+class EXCELReport(object):
+
+    def __init__(self, tlaName='', projName='', swVersion='', hwVersion='',network='', author=''):
+
+        self.row_number   = 13 #First Row from where the data insertion will begin in results template
+        self.rowTypeCol   = 1
+        self.reqIdCol     = 2
+        self.testNameCol  = 3
+        self.testDescCol  = 4
+        self.testCondCol  = 5
+        self.expResCol    = 6
+        self.actResCol    = 7
+        self.testResCol   = 8
+        self.commentsCol  = 9
+
+        self.tlaName      = tlaName
+        self.prjName      = projName
+        self.swVer        = swVersion
+        self.hwVer        = hwVersion
+        self.networkType  = network
+        self.authorName   = author
+
+        self.reportTLA_path   = '../../../Libs/report/reportTLA.xlsx'
+        self.reportFileName   = self.tlaName + '_Report.xlsx'
+        self.reportWorkbook   = load_workbook(self.reportTLA_path)
+        self.reportWorkbook.save(self.reportFileName)
+
+        #Get Worksheet Handle
+        self.reportWorksheet = self.reportWorkbook['Sheet1']
+        self.reportWorksheet.title = self.tlaName
+        self.reportWorkbook.save(self.reportFileName)
+
+
+    def add_test_case(self, title='', description='', reqs=''):
+        '''
+        Description: Adds a new test case (also called test scenario) to the report.
+        Parameter 'title' is a string with the name of the test case.
+        Parameter 'description' is optional, a string with a short description of the test case.
+        Parameter 'reqs' is optional, a string with the requirements tested in this test case.
+        If there are no requirements tested, just leave it as an empty string.
+
+        Example:
+            it_report = EXCELReport('FrontWiper', 'MY_2015', '1.0.0', 'HW1', 'CAN', 'John Doe')
+            test_case_name = 'Front Wiper low speed'
+            test_case_desc = 'Testing low speed in different key positions'
+            test_case_reqs = 'Req_123v2, Req_134'
+            it_report.add_test_case(test_case_name, test_case_desc, test_case_reqs)
+        '''
+        # Initialize headers and other info
+        self.tc_oks         = 0
+        self.tc_noks        = 0
+        # Store parameters
+        self.tc_title       = title
+        self.tc_description = description
+        self.tc_reqs        = reqs
+
+        #Write Testcase data to Worksheet
+        self.reportWorksheet.cell(row = self.row_number, column = self.rowTypeCol,  value='TH')
+        self.reportWorksheet.cell(row = self.row_number, column = self.reqIdCol,    value=self.tc_reqs)
+        self.reportWorksheet.cell(row = self.row_number, column = self.testNameCol, value=self.tc_title)
+        self.reportWorksheet.cell(row = self.row_number, column = self.testDescCol, value=self.tc_description)
+        #Save Workbook
+        self.reportWorkbook.save(self.reportFileName)
+        #Increment current rownumber for Worksheet
+        self.row_number+=1
+
+
+    def add_test_step(self, description='', condition='', expected='', actual='', result=None, comment=''):
+        '''
+        Description: Adds a new test step in the current test case.
+        Parameter 'description' is a string with a short description.
+        Parameter 'result' is optional, a boolean indicating the result of the test step.
+        A True will generate a OK test, a False will generate a NOK test, and None will generate NOT_TESTED.
+        Parameter 'comment' is optional, a string with any interesting comment.
+
+        Note: This method is available for both UTReport and ITReport classes.
+
+        Example:
+            it_report = EXCELReport('FrontWiper', 'MY_2015', '1.0.0', 'HW1', 'CAN', 'John Doe')
+            test_case_name = 'Front Wiper low speed'
+            test_case_desc = 'Testing low speed in different key positions'
+            test_case_reqs = 'Req_123v2, Req_134'
+            it_report.add_test_case(test_case_name, test_case_desc, test_case_reqs)
+            # Adding a test step
+            result = check_act_key_out()
+            test_step_description = 'Checking here Front Wiper low speed is not activated in key out'
+            it_report.add_test_step(test_step_description, result)
+        '''
+        # Store parameters
+        self.ts_desc       = description
+        self.ts_conditions = condition
+        self.ts_actual     = actual
+        self.ts_expected   = expected
+        self.ts_comment    = comment
+
+        if result == True:
+            self.ts_result = 'OK'
+            self.tc_oks += 1
+        else:
+            self.ts_result = 'NOK'
+            self.tc_noks += 1
+
+        #Write Teststep data to Worksheet
+        self.reportWorksheet.cell(row = self.row_number, column = self.rowTypeCol,  value='TS')
+        self.reportWorksheet.cell(row = self.row_number, column = self.testDescCol, value=self.ts_desc)
+        self.reportWorksheet.cell(row = self.row_number, column = self.testCondCol, value=self.ts_conditions)
+        self.reportWorksheet.cell(row = self.row_number, column = self.expResCol,   value=self.ts_expected)
+        self.reportWorksheet.cell(row = self.row_number, column = self.actResCol,   value=self.ts_actual)
+        self.reportWorksheet.cell(row = self.row_number, column = self.testResCol,  value=self.ts_result)
+        self.reportWorksheet.cell(row = self.row_number, column = self.commentsCol, value=self.ts_comment)
+        #Save Workbook
+        self.reportWorkbook.save(self.reportFileName)
+        #Increment current rownumber for Worksheet
+        self.row_number+=1
+
+    def generate_report(self):
+        '''
+        Description: Generates the html file with the test report data.
+                     Must be called at the end of the script.
+        '''
+        os.startfile(self.reportFileName)
+
+    def get_log_dir(self):
+        return (os.getcwd() + self.tlaName + '_logfile.txt')

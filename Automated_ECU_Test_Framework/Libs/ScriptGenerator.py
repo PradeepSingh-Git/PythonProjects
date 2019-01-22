@@ -52,7 +52,6 @@ tsuiteObj.writeChannelSettings()
 tsuiteObj.writePreconditions()
 tsuiteObj.writeGetActualRespDef()
 tsuiteObj.writeInvokeMsgBoxDef()
-tsuiteObj.writexlrespfunction()
 
 
 print "\n------------------START OF WRITING TESTCASES TO PYTHON SCRIPT-------------------\n"
@@ -103,12 +102,6 @@ for testcase in range(0,tsuiteObj.get_totaltests()):
 
             elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'TX_CAN':
                 tsuiteObj.processTypeTX_CAN(testcasenumber,teststepnumber)
-
-            elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'STARTCAN_CYCLICFRAME':
-                tsuiteObj.processTypeSTARTCANCYCLICFRAME(testcasenumber,teststepnumber)
-
-            elif tsuiteObj.get_testcommandtype(testcasenumber,teststepnumber) == 'STOPCAN_CYCLICFRAME':
-                tsuiteObj.processTypeSTOPCANCYCLICFRAME(testcasenumber,teststepnumber)
 
             else:  #Check if none of the Command Type is provided
                 print "\nCommand Type is not selected for test step"
