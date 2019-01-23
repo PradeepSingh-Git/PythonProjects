@@ -36,7 +36,7 @@ testcaseDirectory = sys.argv[3]
 testcaseScriptFile = testcaseFile.split('.')[0] + "_" + testcaseFileSheet
 
 '''Create Object of Testsuite class'''
-tsuiteObj = Testsuite(testcaseFile,testcaseFileSheet,testcaseDirectory,17,1,2,3,4,5,6,7,8,9,10,18)
+tsuiteObj = Testsuite(testcaseFile,testcaseFileSheet,testcaseDirectory)
 
 tsuiteObj.readTestWorkbook()        # Load Test Workbook
 tsuiteObj.createDataDictionary()    # Creates dictionary of data from Excel sheet

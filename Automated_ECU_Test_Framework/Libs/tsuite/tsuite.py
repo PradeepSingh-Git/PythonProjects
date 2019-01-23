@@ -28,7 +28,7 @@ class Testsuite:
     Class for accessing the Framework functionalities.
     '''
 
-    def __init__(self,workBookName='',workSheetName='',workBookPath='',tableHdrRow=17,rowTypeCol=0,cmdTypeCol=1,reqIDCol=2,testNameCol=3,testDescCol=4,testCondCol=5,expResCol=6,actResCol=7,testResCol=8,commentCol=9,first_TH_row=18):
+    def __init__(self,workBookName='',workSheetName='',workBookPath='',tableHdrRow=17,rowTypeCol=1,cmdTypeCol=2,reqIDCol=3,testNameCol=4,testDescCol=5,testCondCol=6,expResCol=7,commentCol=8):
         '''
         Description: Constructor. Access the physical communication device.
 
@@ -47,11 +47,11 @@ class Testsuite:
         self.testDescCol = testDescCol
         self.testCondCol = testCondCol
         self.expResCol   = expResCol
-        self.actResCol   = actResCol
-        self.testResCol  = testResCol
+        self.actResCol   = ''
+        self.testResCol  = ''
         self.commentCol  = commentCol
 
-        self.curr_row    = first_TH_row
+        self.curr_row    = tableHdrRow + 1
         self.Test_Case_Cnt = 0
         self.Test_Step_Cnt = 0
         self.writerow_number=tableHdrRow
@@ -148,8 +148,8 @@ class Testsuite:
                             self.testDescription.append(str(self.xl_sheet.cell(self.curr_row,self.testDescCol).value))#conditions
                             self.testConditions.append(str(self.xl_sheet.cell(self.curr_row,self.testCondCol).value))
                             self.expectedResult.append(str(self.xl_sheet.cell(self.curr_row,self.expResCol).value))
-                            self.actualResult.append(str(self.xl_sheet.cell(self.curr_row,self.actResCol).value))
-                            self.testResults.append(str(self.xl_sheet.cell(self.curr_row,self.testResCol).value))
+                            #self.actualResult.append(str(self.xl_sheet.cell(self.curr_row,self.actResCol).value))
+                            #self.testResults.append(str(self.xl_sheet.cell(self.curr_row,self.testResCol).value))
                             self.comments.append(str(self.xl_sheet.cell(self.curr_row,self.commentCol).value))
                             print str(self.curr_row)
                             print "Added Test step "+str(self.Test_Step_Cnt)
@@ -191,55 +191,55 @@ class Testsuite:
 
 
     def get_Title(self):
-        return str(self.xl_sheet.cell(4,self.testNameCol).value)
+        return str(self.xl_sheet.cell(4,3).value)
 
 
     def get_Author(self):
-        return str(self.xl_sheet.cell(6,self.testNameCol).value)
+        return str(self.xl_sheet.cell(6,3).value)
 
 
     def get_Project(self):
-        return str(self.xl_sheet.cell(8,self.testNameCol).value)
+        return str(self.xl_sheet.cell(8,3).value)
 
 
     def get_SoftwareVersion(self):
-        return str(self.xl_sheet.cell(10,self.testNameCol).value)
+        return str(self.xl_sheet.cell(10,3).value)
 
 
     def get_HardwareVersion(self):
-        return str(self.xl_sheet.cell(12,self.testNameCol).value)
+        return str(self.xl_sheet.cell(12,3).value)
 
 
     def get_NetworkType(self):
-        return str(self.xl_sheet.cell(14,self.testNameCol).value)
+        return str(self.xl_sheet.cell(14,3).value)
 
 
     def get_CANChannelID(self):
-        return str(self.xl_sheet.cell(4,self.actResCol).value)
+        return str(self.xl_sheet.cell(4,7).value)
 
 
     def get_CANChannelBR(self):
-        return str(self.xl_sheet.cell(4,self.testResCol).value)
+        return str(self.xl_sheet.cell(4,8).value)
 
 
     def get_LINChannelID(self):
-        return str(self.xl_sheet.cell(6,self.actResCol).value)
+        return str(self.xl_sheet.cell(6,7).value)
 
 
     def get_LINChannelBR(self):
-        return str(self.xl_sheet.cell(6,self.testResCol).value)
+        return str(self.xl_sheet.cell(6,8).value)
 
 
     def get_FlexrayChannelID(self):
-        return str(self.xl_sheet.cell(8,self.actResCol).value)
+        return str(self.xl_sheet.cell(8,7).value)
 
 
     def get_FlexrayChannelBR(self):
-        return str(self.xl_sheet.cell(8,self.testResCol).value)
+        return str(self.xl_sheet.cell(8,8).value)
 
 
     def get_DbcPath(self):
-        return str(self.xl_sheet.cell(10,self.actResCol).value)
+        return str(self.xl_sheet.cell(10,7).value)
 
 
     def get_testcommandtype(self,testcasenumber,teststepnumber):
@@ -336,7 +336,12 @@ class Testsuite:
         batchtitle = self.workBookPath + "\\" + self.workBookName + "\\" + self.workSheetName + "\\"  + self.get_batchScriptFileName()
 
         self.batchfo = open(batchtitle,'w') #open file in write mode
-        self.batchfo.write("C:\Python27\python.exe" + " %s" %(self.get_pyScriptFileName()))
+        self.batchfo.write("@echo off")
+        self.batchfo.write("\ncolor 0a")
+        self.batchfo.write("\ntitle Executing %s" %(self.get_pyScriptFileName()))
+        self.batchfo.write("\n")
+        self.batchfo.write("\n")
+        self.batchfo.write('C:\Python27\python.exe -u' + ' %s | "..\..\..\Libs\wtee\wtee" %s_Log_Console.txt' %(self.get_pyScriptFileName(),self.workSheetName))
         self.batchfo.close()
 
 #---------------------------- Generate Copyright header -------------------------------------------#
