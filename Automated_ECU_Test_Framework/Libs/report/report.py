@@ -405,14 +405,20 @@ class EXCELReport(object):
         self.networkType  = network
         self.authorName   = author
 
+        #-----------Get Current Folder Name---------#
+        temp_str = str(os.getcwd()).split("\\")
+        n = len(temp_str)
+        self.currFolderName = str(temp_str[n-1])
+        #-------------------------------------------#
+
         self.reportTLA_path   = '../../../Libs/report/reportTLA.xlsx'
-        self.reportFileName   = self.tlaName + '_Report.xlsx'
+        self.reportFileName   = self.currFolderName + '_Report.xlsx'
         self.reportWorkbook   = load_workbook(self.reportTLA_path)
         self.reportWorkbook.save(self.reportFileName)
 
         #Get Worksheet Handle
         self.reportWorksheet = self.reportWorkbook['Sheet1']
-        self.reportWorksheet.title = self.tlaName
+        self.reportWorksheet.title = self.currFolderName
         self.reportWorkbook.save(self.reportFileName)
 
 
@@ -506,4 +512,4 @@ class EXCELReport(object):
         os.startfile(self.reportFileName)
 
     def get_log_dir(self):
-        return (os.getcwd() + self.tlaName + '_logfile.txt')
+        return (self.currFolderName + '_Log.txt')

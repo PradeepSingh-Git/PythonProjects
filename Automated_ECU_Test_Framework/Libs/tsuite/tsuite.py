@@ -170,11 +170,11 @@ class Testsuite:
 
 
     def get_pyScriptFileName(self):
-        return str(self.workBookName + '_' + self.workSheetName + '.py')
+        return str(self.workSheetName + '.py')
 
 
     def get_batchScriptFileName(self):
-        return str(self.workBookName + '_' + self.workSheetName + '.bat')
+        return str(self.workSheetName + '.bat')
 
 
     def get_totaltests(self):
@@ -247,27 +247,45 @@ class Testsuite:
 
 
     def get_testrequirementid(self,testcasenumber):
-        return str(self.list_of_tests[testcasenumber]['TH_Requirement_ID'])
+        if(str(self.list_of_tests[testcasenumber]['TH_Requirement_ID']) == 'None'):
+            return ''
+        else:
+            return str(self.list_of_tests[testcasenumber]['TH_Requirement_ID'])
 
 
     def get_testname(self,testcasenumber):
-        return str(self.list_of_tests[testcasenumber]['TH_Test_NAME'])
+        if(str(self.list_of_tests[testcasenumber]['TH_Test_NAME']) == 'None'):
+            return ''
+        else:
+            return str(self.list_of_tests[testcasenumber]['TH_Test_NAME'])
 
 
     def get_testdescription(self,testcasenumber):
-        return str(self.list_of_tests[testcasenumber]['TH_Test_DESCRIPTION'])
+        if(str(self.list_of_tests[testcasenumber]['TH_Test_DESCRIPTION']) == 'None'):
+            return ''
+        else:
+            return str(self.list_of_tests[testcasenumber]['TH_Test_DESCRIPTION'])
 
 
     def get_teststepdescription(self,testcasenumber,teststepnumber):
-        return str(self.list_of_tests[testcasenumber]['TS_Test_DESCRIPTION'][teststepnumber])
+        if(str(self.list_of_tests[testcasenumber]['TS_Test_DESCRIPTION'][teststepnumber]) == 'None'):
+            return ''
+        else:
+            return str(self.list_of_tests[testcasenumber]['TS_Test_DESCRIPTION'][teststepnumber])
 
 
     def get_testconditions(self,testcasenumber,teststepnumber):
-        return str(self.list_of_tests[testcasenumber]['TS_Test_CONDITION'][teststepnumber])
+        if(str(self.list_of_tests[testcasenumber]['TS_Test_CONDITION'][teststepnumber]) == 'None'):
+            return ''
+        else:
+            return str(self.list_of_tests[testcasenumber]['TS_Test_CONDITION'][teststepnumber])
 
 
     def get_expectedresult(self,testcasenumber,teststepnumber):
-        return str(self.list_of_tests[testcasenumber]['TS_Expected_RESULT'][teststepnumber])
+        if(str(self.list_of_tests[testcasenumber]['TS_Expected_RESULT'][teststepnumber]) == 'None'):
+            return ''
+        else:
+            return str(self.list_of_tests[testcasenumber]['TS_Expected_RESULT'][teststepnumber])
 
 
     def get_actualresult(self,testcasenumber,teststepnumber):
@@ -279,7 +297,10 @@ class Testsuite:
 
 
     def get_comments(self,testcasenumber,teststepnumber):
-        return str(self.list_of_tests[testcasenumber]['TS_Comments'][teststepnumber])
+        if(str(self.list_of_tests[testcasenumber]['TS_Comments'][teststepnumber]) == 'None'):
+            return ''
+        else:
+            return str(self.list_of_tests[testcasenumber]['TS_Comments'][teststepnumber])
 
 
     def get_numberofteststeps(self,testcasenumber):
@@ -738,6 +759,14 @@ class Testsuite:
         self.fo.write("    #Code block generated for row no = %s #\n" %self.writerow_number)
         self.fo.write("    #######################################\n")
         self.fo.write("\n")
+
+        if(test_step_Desc ==''): # Check For Proper Data Entry in Excel sheet
+            print "\n**Error occured."
+            print "\nTest Description is not provided."
+            print "\nCheck Row no:" + str(self.writerow_number)
+            print "\nCheck Column no:" + str(self.testDescCol)
+            sys.exit()
+
         self.fo.write("    ################################\n")  # Reset By Diagnostics
         self.fo.write("    ## CAN_START COMMUNICATION      ##\n")
         self.fo.write("    ################################\n")
@@ -765,6 +794,14 @@ class Testsuite:
         self.fo.write("    #Code block generated for row no = %s #\n" %self.writerow_number)
         self.fo.write("    #######################################\n")
         self.fo.write("\n")
+
+        if(test_step_Desc ==''): # Check For Proper Data Entry in Excel sheet
+            print "\n**Error occured."
+            print "\nTest Description is not provided."
+            print "\nCheck Row no:" + str(self.writerow_number)
+            print "\nCheck Column no:" + str(self.testDescCol)
+            sys.exit()
+
         self.fo.write("    ################################\n")  # Reset By Diagnostics
         self.fo.write("    ## CAN_STOP COMMUNICATION      ##\n")
         self.fo.write("    ################################\n")
@@ -924,6 +961,8 @@ class Testsuite:
         self.fo.write("\n")
         self.fo.write("\n")
         self.fo.write(r"    print '\nScript Execution Finished !!'")
+        self.fo.write("\n")
+        self.fo.write("\n")
         self.fo.write("\n")
         self.fo.write("\n    com.exit()\n\n\n\n")
 

@@ -18,7 +18,6 @@ set testcaseFileSheetName=%2
 set currentpath=%3
 set pythonpath="C:\Python27\python.exe"
 
-set LOG=CONSOLE_LOG.txt
 set WTEE="..\..\..\Libs\wtee\wtee"
 
 echo ###############################################################################
@@ -41,24 +40,15 @@ if %input%=="Y" OR %input%=="y" (goto STARTEXECUTION) else COMMONEXIT
 
 :STARTEXECUTION
 cd %currentpath%
-set tempstr=%testcaseFileName:.xlsm=%
 
-echo tempstr = %tempstr%
-rem set newcurrentpath=%currentpath%\%tempstr%_%testcaseFileSheetName%
-mkdir %tempstr%
-cd %currentpath%\%tempstr%
+set workbookNameFolder=%testcaseFileName:.xlsm=%
+set sheetNameFolder=%testcaseFileSheetName%
 
-set sheetname=%testcaseFileSheetName%
-set currentpath=%currentpath%\%tempstr%
-mkdir %sheetname%
-set newcurrentpath=%currentpath%\%sheetname%
+cd %currentpath%\%workbookNameFolder%\%sheetNameFolder%
 
-cd %newcurrentpath%
-echo newcurrentpath=%newcurrentpath%
-rem set pyscriptFilename=%tempstr%_%testcaseFileSheetName%.py
-set pyscriptFilename=%tempstr%_%sheetname%.py
-echo pyscriptFilename = %pyscriptFilename%
-%pythonpath% -u %pyscriptFilename% | %WTEE% log.txt
+%pythonpath% -u %testcaseFileSheetName%.py | %WTEE% %testcaseFileSheetName%_Log_Console.txt
+
 echo ########################InvokeScriptGenerator.bat##########################
+
 :COMMONEXIT
 pause
