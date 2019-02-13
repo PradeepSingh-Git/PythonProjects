@@ -42,7 +42,7 @@ Description : Setup Flexray and CAN channels
 ================================================================================
 '''
 com = Com('VECTOR')
-frObj  = com.open_fr_channel(0, 'Flexray_FIBEX_X_NCR16W31.xml', 'FrChannel_A', 'EPICB', [10, 50], cluster='FlexRay')
+frObj  = com.open_fr_channel(0, 'fibex.xml', 'FrChannel_A', 'EPICB', [10, 50], cluster='FlexRay')
 canObj = com.open_can_channel(1,500000)
 
 '''
