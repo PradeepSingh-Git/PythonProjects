@@ -46,9 +46,9 @@ if dgnflex_available:
             FR_NAME_ID_ECU_RESP = ['EPICB_FR_DiagResp']
         else:
             # Define frame ID slots to be used for DGN (Note: MUST not be present in Fibex/AutosarEcuExtract)
-            FR_SLOT_ID_TESTER_PHYS_REQ = 88 # define here FlexRay slot ID assigned to the Tester physical request
-            FR_SLOT_ID_TESTER_FUNC_REQ = 87 # define here FlexRay slot ID assigned to the Tester functional request
-            FR_SLOT_ID_ECU_RESP = [69, 75, 81] # define here FlexRay slot(s) ID assigned to the ECU response
+            FR_SLOT_ID_TESTER_PHYS_REQ = 70 # define here FlexRay slot ID assigned to the Tester physical request
+            FR_SLOT_ID_TESTER_FUNC_REQ = 70 # define here FlexRay slot ID assigned to the Tester functional request
+            FR_SLOT_ID_ECU_RESP = [118] # define here FlexRay slot(s) ID assigned to the ECU response
             MAX_PAYLOAD_REQUEST_APP = 32
             MAX_PAYLOAD_RESPONSE_APP = 32
 
